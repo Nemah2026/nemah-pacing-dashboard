@@ -7,30 +7,44 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{--cream:#faf8f4;--warm:#f3efe7;--warm2:#ede7db;--border:#ddd6c8;--border2:#c9beae;--espresso:#2c2118;--brown:#5c4033;--muted:#9c8e80;--light:#bdb0a0;--green:#5a7a52;--yellow:#a87c2a;--red:#9e3a2a;--shopify:#6b8f5e;--amazon:#c47b1a;--target:#a03020;--shadow:0 1px 3px rgba(44,33,24,.06),0 4px 16px rgba(44,33,24,.04)}
+:root{
+  --cream:#faf8f4;--warm:#f3efe7;--warm2:#ede7db;--border:#ddd6c8;--border2:#c9beae;
+  --espresso:#2c2118;--brown:#5c4033;--muted:#9c8e80;--light:#bdb0a0;
+  --green:#5a7a52;--yellow:#a87c2a;--red:#9e3a2a;
+  --shopify:#6b8f5e;--amazon:#c47b1a;--target:#a03020;
+  --shadow:0 1px 3px rgba(44,33,24,.06),0 4px 16px rgba(44,33,24,.04);
+}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--cream);color:var(--espresso);font-family:'Jost',sans-serif;font-weight:300;min-height:100vh}
+
+/* HEADER */
 .header{background:var(--espresso);padding:0 48px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:200}
+.header-left{display:flex;align-items:center}
 .logo{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;font-style:italic;color:var(--cream);letter-spacing:.5px}
 .hdiv{width:1px;height:20px;background:rgba(250,248,244,.15);margin:0 20px}
 .dash-name{font-size:10px;text-transform:uppercase;letter-spacing:4px;color:rgba(250,248,244,.45);font-weight:400}
-.hright{display:flex;align-items:center;gap:28px}
+.header-right{display:flex;align-items:center;gap:28px}
+.hstat{text-align:right}
 .hstat-lbl{font-size:8px;text-transform:uppercase;letter-spacing:2px;color:rgba(250,248,244,.4);margin-bottom:2px}
 .hstat-val{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:var(--cream)}
 .live-pill{display:flex;align-items:center;gap:6px;font-size:8px;text-transform:uppercase;letter-spacing:2px;color:#a8c9a0;border:1px solid rgba(168,201,160,.3);padding:4px 10px}
 .live-dot{width:5px;height:5px;border-radius:50%;background:#a8c9a0;animation:pulse 2.5s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
-/* MONTH SELECTOR */
-.month-bar{background:var(--warm);border-bottom:1px solid var(--border);padding:10px 48px;display:flex;align-items:center;gap:8px;position:sticky;top:64px;z-index:150}
-.month-lbl{font-size:8px;text-transform:uppercase;letter-spacing:3px;color:var(--light);margin-right:4px;font-weight:400}
-.mbtn{padding:6px 16px;font-family:'Jost',sans-serif;font-size:10px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s;font-weight:400;letter-spacing:1px}
+/* MONTH BAR */
+.month-bar{background:var(--warm);border-bottom:1px solid var(--border);padding:12px 48px;display:flex;align-items:center;gap:6px;position:sticky;top:64px;z-index:150}
+.month-lbl{font-size:8px;text-transform:uppercase;letter-spacing:3px;color:var(--light);margin-right:8px;font-weight:400;white-space:nowrap}
+.mbtn{padding:7px 18px;font-family:'Jost',sans-serif;font-size:10px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s;font-weight:400;letter-spacing:1px;white-space:nowrap}
 .mbtn:hover{border-color:var(--brown);color:var(--espresso)}
 .mbtn.on{background:var(--espresso);color:var(--cream);border-color:var(--espresso)}
-.month-info{margin-left:auto;font-size:10px;color:var(--muted)}
+.month-info{margin-left:auto;font-size:10px;color:var(--muted);font-style:italic;white-space:nowrap}
+.loading-indicator{font-size:9px;color:var(--muted);display:none;align-items:center;gap:6px;margin-left:12px}
+.loading-indicator.on{display:flex}
+.lring{width:10px;height:10px;border:1.5px solid var(--border2);border-top-color:var(--espresso);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* TABS */
-.nav{background:var(--warm);border-bottom:1px solid var(--border);padding:0 48px;display:flex;position:sticky;top:106px;z-index:100}
+.nav{background:var(--warm);border-bottom:1px solid var(--border);padding:0 48px;display:flex;position:sticky;top:109px;z-index:100}
 .tab{padding:13px 22px;font-size:10px;text-transform:uppercase;letter-spacing:2.5px;color:var(--muted);cursor:pointer;border-bottom:1.5px solid transparent;transition:all .15s;display:flex;align-items:center;gap:8px;font-weight:400}
 .tab:hover{color:var(--espresso)}
 .tab.active{color:var(--espresso);border-bottom-color:var(--espresso)}
@@ -39,12 +53,12 @@ body{background:var(--cream);color:var(--espresso);font-family:'Jost',sans-serif
 /* MAIN */
 .main{padding:36px 48px;max-width:1440px;margin:0 auto}
 .view{display:none}.view.active{display:block}
-.slabel{font-size:8px;text-transform:uppercase;letter-spacing:3.5px;color:var(--light);margin-bottom:20px;margin-top:36px;display:flex;align-items:center;gap:14px;font-weight:400}
+.slabel{font-size:8px;text-transform:uppercase;letter-spacing:3.5px;color:var(--light);margin-bottom:20px;margin-top:32px;display:flex;align-items:center;gap:14px;font-weight:400}
 .slabel:first-child{margin-top:0}
 .slabel::after{content:'';flex:1;height:1px;background:var(--border)}
 
 /* CHANNEL CARDS */
-.ch-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-bottom:28px;box-shadow:var(--shadow)}
+.ch-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-bottom:24px;box-shadow:var(--shadow)}
 .chc{background:var(--warm);padding:28px;position:relative;overflow:hidden}
 .chc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
 .chc.s::before{background:var(--shopify)}
@@ -52,7 +66,7 @@ body{background:var(--cream);color:var(--espresso);font-family:'Jost',sans-serif
 .chc.t::before{background:var(--target)}
 .ch-lbl{font-size:8px;text-transform:uppercase;letter-spacing:3px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .ch-pip{width:6px;height:6px;border-radius:50%}
-.ch-rev{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:300;line-height:1;margin-bottom:6px}
+.ch-rev{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:300;line-height:1;margin-bottom:6px;transition:all .3s}
 .ch-vs{font-size:10px;color:var(--muted);margin-bottom:14px}
 .mini-track{height:2px;background:var(--warm2);margin-bottom:5px}
 .mini-fill{height:100%;transition:width .9s cubic-bezier(.4,0,.2,1)}
@@ -64,34 +78,37 @@ body{background:var(--cream);color:var(--espresso);font-family:'Jost',sans-serif
 .spill-n{background:var(--warm2);color:var(--muted);border:1px solid var(--border)}
 
 /* KPI */
-.kg{display:grid;gap:1px;background:var(--border);margin-bottom:28px;box-shadow:var(--shadow)}
+.kg{display:grid;gap:1px;background:var(--border);margin-bottom:24px;box-shadow:var(--shadow)}
 .g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
 .kpi{background:var(--warm);padding:22px 24px}
 .kpi-lbl{font-size:8px;text-transform:uppercase;letter-spacing:3px;color:var(--muted);margin-bottom:10px;font-weight:400}
-.kpi-val{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;line-height:1;margin-bottom:6px}
+.kpi-val{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;line-height:1;margin-bottom:6px;transition:all .3s}
 .kpi-sub{font-size:10px;color:var(--muted)}
 .badge{display:inline-block;font-size:9px;padding:3px 10px;margin-top:8px}
-.bg{background:rgba(90,122,82,.1);color:var(--green)}.by{background:rgba(168,124,42,.1);color:var(--yellow)}.br{background:rgba(158,58,42,.1);color:var(--red)}.bn{background:var(--warm2);color:var(--muted)}
+.bg{background:rgba(90,122,82,.1);color:var(--green)}
+.by{background:rgba(168,124,42,.1);color:var(--yellow)}
+.br{background:rgba(158,58,42,.1);color:var(--red)}
+.bn{background:var(--warm2);color:var(--muted)}
 
 /* PROGRESS BAR */
-.pb{background:var(--warm);border:1px solid var(--border);padding:22px 24px;margin-bottom:28px;box-shadow:var(--shadow)}
+.pb{background:var(--warm);border:1px solid var(--border);padding:22px 24px;margin-bottom:24px;box-shadow:var(--shadow)}
 .pb-hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
 .pb-ttl{font-size:8px;text-transform:uppercase;letter-spacing:3px;color:var(--muted);font-weight:400}
-.pb-pct{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300}
+.pb-pct{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;transition:all .3s}
 .pb-track{height:4px;background:var(--warm2);position:relative;margin-bottom:8px}
 .pb-fill{height:100%;transition:width .9s cubic-bezier(.4,0,.2,1)}
 .pb-marker{position:absolute;top:-4px;width:1px;height:12px;background:var(--border2)}
 .pb-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--light)}
 
 /* CHARTS */
-.cg{display:grid;gap:1px;background:var(--border);margin-bottom:28px;box-shadow:var(--shadow)}
+.cg{display:grid;gap:1px;background:var(--border);margin-bottom:24px;box-shadow:var(--shadow)}
 .cg2{grid-template-columns:1fr 1fr}
 .cc{background:var(--warm);padding:22px 24px}
 .ct{font-size:8px;text-transform:uppercase;letter-spacing:3px;color:var(--muted);margin-bottom:20px;font-weight:400}
-.h240{height:240px;position:relative}.h200{height:200px;position:relative}
+.h240{height:240px;position:relative}
 
 /* TABLE */
-.twrap{background:var(--warm);border:1px solid var(--border);margin-bottom:28px;overflow:hidden;box-shadow:var(--shadow)}
+.twrap{background:var(--warm);border:1px solid var(--border);margin-bottom:24px;overflow:hidden;box-shadow:var(--shadow)}
 .thead-bar{padding:14px 24px;background:var(--warm2);border-bottom:1px solid var(--border);font-size:8px;text-transform:uppercase;letter-spacing:3px;color:var(--muted);font-weight:400}
 table{width:100%;border-collapse:collapse}
 th{padding:10px 18px;font-size:8px;text-transform:uppercase;letter-spacing:2px;color:var(--light);border-bottom:1px solid var(--border);text-align:left;background:var(--warm2);font-weight:400}
@@ -101,7 +118,7 @@ td:not(:first-child){text-align:right}
 tr:last-child td{border-bottom:none}
 tr.cur td{background:rgba(90,122,82,.04)}
 tr.cur td:first-child{border-left:2px solid var(--brown);padding-left:16px}
-tr:hover td{background:rgba(237,231,219,.4)}
+tr:hover td{background:rgba(237,231,219,.5)}
 
 /* UPLOAD */
 .upload-strip{background:var(--warm);border:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
@@ -114,26 +131,27 @@ input[type=file]{display:none}
 <body>
 
 <header class="header">
-  <div style="display:flex;align-items:center">
+  <div class="header-left">
     <div class="logo">Nēmah</div>
     <div class="hdiv"></div>
     <div class="dash-name">Pacing Dashboard</div>
   </div>
-  <div class="hright">
-    <div><div class="hstat-lbl">DTC</div><div class="hstat-val" id="hdr-dtc">—</div></div>
-    <div><div class="hstat-lbl">Amazon</div><div class="hstat-val" id="hdr-amz">—</div></div>
-    <div><div class="hstat-lbl">Target</div><div class="hstat-val" id="hdr-tgt">—</div></div>
-    <div class="live-pill"><div class="live-dot"></div>Live</div>
+  <div class="header-right">
+    <div class="hstat"><div class="hstat-lbl">DTC</div><div class="hstat-val" id="hdr-dtc">—</div></div>
+    <div class="hstat"><div class="hstat-lbl">Amazon</div><div class="hstat-val" id="hdr-amz">—</div></div>
+    <div class="hstat"><div class="hstat-lbl">Target</div><div class="hstat-val" id="hdr-tgt">—</div></div>
+    <div class="live-pill"><div class="live-dot"></div><span id="hdr-ts">Live</span></div>
   </div>
 </header>
 
-<!-- MONTH SELECTOR -->
 <div class="month-bar">
-  <div class="month-lbl">Month</div>
+  <div class="month-lbl">View Month</div>
+  <button class="mbtn" onclick="setMonth('Jan',this)">Jan</button>
   <button class="mbtn" onclick="setMonth('Feb',this)">Feb</button>
   <button class="mbtn" onclick="setMonth('Mar',this)">Mar</button>
   <button class="mbtn" onclick="setMonth('Apr',this)">Apr</button>
-  <button class="mbtn on" onclick="setMonth('May',this)">May</button>
+  <button class="mbtn on" onclick="setMonth('May',this)">May ← MTD</button>
+  <div class="loading-indicator" id="loading-ind"><div class="lring"></div><span>Updating…</span></div>
   <div class="month-info" id="month-info">May 2026 — MTD (Day 5 of 31)</div>
 </div>
 
@@ -146,47 +164,57 @@ input[type=file]{display:none}
 
 <div class="main">
 
+<!-- OVERVIEW -->
 <div id="tab-overview" class="view active">
-  <div class="slabel" id="ov-label">All Channels — May 2026 MTD</div>
+  <div class="slabel" id="ov-slabel">All Channels — May 2026 MTD</div>
   <div class="ch-cards">
-    <div class="chc s"><div class="ch-lbl"><div class="ch-pip" style="background:var(--shopify)"></div>Shopify / DTC</div>
+    <div class="chc s">
+      <div class="ch-lbl"><div class="ch-pip" style="background:var(--shopify)"></div>Shopify / DTC</div>
       <div class="ch-rev" style="color:var(--shopify)" id="ov-sh-rev">—</div>
       <div class="ch-vs" id="ov-sh-vs">—</div>
       <div class="mini-track"><div class="mini-fill" style="background:var(--shopify)" id="ov-sh-bar"></div></div>
-      <div class="mini-labels"><span id="ov-sh-pct">—</span><span id="ov-sh-days">—</span></div>
-      <span class="spill" id="ov-sh-pill">—</span></div>
-    <div class="chc a"><div class="ch-lbl"><div class="ch-pip" style="background:var(--amazon)"></div>Amazon</div>
+      <div class="mini-labels"><span id="ov-sh-pct">—</span><span>of goal</span></div>
+      <span class="spill" id="ov-sh-pill">—</span>
+    </div>
+    <div class="chc a">
+      <div class="ch-lbl"><div class="ch-pip" style="background:var(--amazon)"></div>Amazon</div>
       <div class="ch-rev" style="color:var(--amazon)" id="ov-amz-rev">—</div>
       <div class="ch-vs" id="ov-amz-vs">—</div>
       <div class="mini-track"><div class="mini-fill" style="background:var(--amazon)" id="ov-amz-bar"></div></div>
-      <div class="mini-labels"><span id="ov-amz-pct">—</span><span>MTD</span></div>
-      <span class="spill" id="ov-amz-pill">—</span></div>
-    <div class="chc t"><div class="ch-lbl"><div class="ch-pip" style="background:var(--target)"></div>Target</div>
+      <div class="mini-labels"><span id="ov-amz-pct">—</span><span>of goal</span></div>
+      <span class="spill" id="ov-amz-pill">—</span>
+    </div>
+    <div class="chc t">
+      <div class="ch-lbl"><div class="ch-pip" style="background:var(--target)"></div>Target</div>
       <div class="ch-rev" style="color:var(--target)" id="ov-tgt-rev">—</div>
       <div class="ch-vs" id="ov-tgt-vs">—</div>
       <div class="mini-track"><div class="mini-fill" style="background:var(--target)" id="ov-tgt-bar"></div></div>
       <div class="mini-labels"><span id="ov-tgt-pct">—</span><span>PO-based</span></div>
-      <span class="spill" id="ov-tgt-pill">—</span></div>
+      <span class="spill" id="ov-tgt-pill">—</span>
+    </div>
   </div>
   <div class="kg g4">
     <div class="kpi"><div class="kpi-lbl">Total Revenue</div><div class="kpi-val" id="ov-total">—</div><div class="kpi-sub">All channels</div></div>
-    <div class="kpi"><div class="kpi-lbl">Combined Goal</div><div class="kpi-val" id="ov-goal">—</div><div class="kpi-sub" id="ov-goal-sub">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">Combined Goal</div><div class="kpi-val" id="ov-goal">—</div><div class="kpi-sub" id="ov-goal-pct">—</div></div>
     <div class="kpi"><div class="kpi-lbl">YTD All Channels</div><div class="kpi-val" id="ov-ytd">—</div><div class="kpi-sub">Jan – present</div></div>
     <div class="kpi"><div class="kpi-lbl">Annual Goal</div><div class="kpi-val">$4.55M</div><div class="kpi-sub">DTC + Amazon + Target</div><div class="badge bn" id="ov-ann">—</div></div>
   </div>
-  <div class="cc" style="margin-bottom:28px;box-shadow:var(--shadow)">
-    <div class="ct">Monthly Revenue by Channel — 2026</div>
+  <div class="cc" style="margin-bottom:24px;box-shadow:var(--shadow)">
+    <div class="ct" id="ov-chart-title">Monthly Revenue by Channel — 2026</div>
     <div class="h240"><canvas id="ov-chart"></canvas></div>
   </div>
   <div class="twrap">
-    <div class="thead-bar">Monthly Performance — All Channels</div>
-    <table><thead><tr><th>Month</th><th>Shopify</th><th>Shop Goal</th><th>Amazon</th><th>Amz Goal</th><th>Target</th><th>Tgt Goal</th><th>Total</th><th>Status</th></tr></thead>
-    <tbody id="ov-tbody"></tbody></table>
+    <div class="thead-bar">All Months Summary</div>
+    <table>
+      <thead><tr><th>Month</th><th>Shopify</th><th>Shop Goal</th><th>Amazon</th><th>Amz Goal</th><th>Target</th><th>Tgt Goal</th><th>Total</th><th>Status</th></tr></thead>
+      <tbody id="ov-tbody"></tbody>
+    </table>
   </div>
 </div>
 
+<!-- SHOPIFY -->
 <div id="tab-shopify" class="view">
-  <div class="slabel" id="sh-label">Shopify / DTC</div>
+  <div class="slabel" id="sh-slabel">Shopify / DTC</div>
   <div class="kg g4">
     <div class="kpi"><div class="kpi-lbl">Revenue</div><div class="kpi-val" id="sh-rev">—</div><div class="kpi-sub" id="sh-rev-sub">—</div></div>
     <div class="kpi"><div class="kpi-lbl">Monthly Goal</div><div class="kpi-val" id="sh-goal">—</div><div class="kpi-sub" id="sh-goal-pct">—</div></div>
@@ -200,44 +228,46 @@ input[type=file]{display:none}
   </div>
   <div class="cg cg2">
     <div class="cc"><div class="ct" id="sh-daily-title">Daily Revenue</div><div class="h240"><canvas id="sh-daily"></canvas></div></div>
-    <div class="cc"><div class="ct">Monthly Actual vs Goal</div><div class="h240"><canvas id="sh-monthly"></canvas></div></div>
+    <div class="cc"><div class="ct">All Months — Actual vs Goal</div><div class="h240"><canvas id="sh-monthly"></canvas></div></div>
   </div>
   <div class="twrap"><div class="thead-bar">Monthly Performance — Shopify / DTC</div>
     <table><thead><tr><th>Month</th><th>Actual</th><th>Goal</th><th>Variance $</th><th>Variance %</th><th>Status</th></tr></thead>
     <tbody id="sh-tbody"></tbody></table></div>
 </div>
 
+<!-- AMAZON -->
 <div id="tab-amazon" class="view">
-  <div class="slabel" id="amz-label">Amazon</div>
+  <div class="slabel" id="amz-slabel">Amazon</div>
   <div class="kg g4">
-    <div class="kpi"><div class="kpi-lbl">Revenue</div><div class="kpi-val" id="amz-rev">—</div></div>
-    <div class="kpi"><div class="kpi-lbl">Monthly Goal</div><div class="kpi-val" id="amz-goal">—</div><div class="kpi-sub" id="amz-pct">—</div></div>
-    <div class="kpi"><div class="kpi-lbl">ROAS</div><div class="kpi-val" id="amz-roas">—</div></div>
-    <div class="kpi"><div class="kpi-lbl">Projected EOM</div><div class="kpi-val" id="amz-proj">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">Revenue</div><div class="kpi-val" id="amz-rev">—</div><div class="kpi-sub" id="amz-rev-sub">Live from Triple Whale</div></div>
+    <div class="kpi"><div class="kpi-lbl">Monthly Goal</div><div class="kpi-val" id="amz-goal">—</div><div class="kpi-sub" id="amz-goal-pct">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">vs Goal</div><div class="kpi-val" id="amz-var">—</div><div class="kpi-sub" id="amz-var-sub">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">Projected EOM</div><div class="kpi-val" id="amz-proj">—</div><div class="kpi-sub" id="amz-proj-sub">—</div></div>
   </div>
   <div class="pb">
     <div class="pb-hdr"><div class="pb-ttl">Monthly Goal Attainment</div><div class="pb-pct" id="amz-pb-pct">—</div></div>
-    <div class="pb-track"><div class="pb-fill" style="background:var(--amazon)" id="amz-pb-fill"></div></div>
+    <div class="pb-track"><div class="pb-fill" style="background:var(--amazon)" id="amz-pb-fill"></div><div class="pb-marker" id="amz-pb-marker"></div></div>
     <div class="pb-labels"><span>$0</span><span id="amz-pb-mid">—</span><span id="amz-pb-end">—</span></div>
   </div>
   <div class="cg cg2">
-    <div class="cc"><div class="ct">Monthly Trend</div><div class="h240"><canvas id="amz-trend"></canvas></div></div>
-    <div class="cc"><div class="ct">Actual vs Goal</div><div class="h240"><canvas id="amz-vs"></canvas></div></div>
+    <div class="cc"><div class="ct">Monthly Revenue — All Months</div><div class="h240"><canvas id="amz-trend"></canvas></div></div>
+    <div class="cc"><div class="ct">Actual vs Goal by Month</div><div class="h240"><canvas id="amz-vs"></canvas></div></div>
   </div>
   <div class="twrap"><div class="thead-bar">Monthly Performance — Amazon</div>
     <table><thead><tr><th>Month</th><th>Actual</th><th>Goal</th><th>Variance $</th><th>Variance %</th><th>Status</th></tr></thead>
     <tbody id="amz-tbody"></tbody></table></div>
 </div>
 
+<!-- TARGET -->
 <div id="tab-target" class="view">
-  <div class="slabel">Target — Wholesale PO Tracker</div>
+  <div class="slabel" id="tgt-slabel">Target — Wholesale PO Tracker</div>
   <div class="upload-strip">
     <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted)">Upload Weekly PO</div><div style="font-size:10px;color:var(--light);margin-top:3px">Drop new TGT-SO-*.csv to refresh actuals</div></div>
     <label class="ul-btn" for="po-file">+ Upload PO CSV</label>
     <input type="file" id="po-file" accept=".csv">
   </div>
   <div class="kg g4">
-    <div class="kpi"><div class="kpi-lbl">MTD Actuals</div><div class="kpi-val" id="tgt-mtd">—</div><div class="kpi-sub" id="tgt-mtd-sub">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">Month Actuals</div><div class="kpi-val" id="tgt-mtd">—</div><div class="kpi-sub" id="tgt-mtd-sub">—</div></div>
     <div class="kpi"><div class="kpi-lbl">Monthly Goal</div><div class="kpi-val" id="tgt-goal">—</div></div>
     <div class="kpi"><div class="kpi-lbl">YTD Actuals</div><div class="kpi-val">$253,875</div><div class="badge bg">+8.6% vs pace</div></div>
     <div class="kpi"><div class="kpi-lbl">Annual Goal</div><div class="kpi-val">$741,373</div><div class="kpi-sub">34.2% complete</div></div>
@@ -255,269 +285,381 @@ input[type=file]{display:none}
     <table><thead><tr><th>Month</th><th>Actual</th><th>Goal</th><th>Variance $</th><th>Variance %</th><th>Status</th></tr></thead>
     <tbody id="tgt-tbody"></tbody></table></div>
 </div>
-</div>
+
+</div><!-- /main -->
 
 <script>
-Chart.defaults.color='#9c8e80';Chart.defaults.borderColor='#ddd6c8';
-Chart.defaults.font.family="'Jost',sans-serif";Chart.defaults.font.size=10;Chart.defaults.font.weight='300';
+Chart.defaults.color='#9c8e80';
+Chart.defaults.borderColor='#ddd6c8';
+Chart.defaults.font.family="'Jost',sans-serif";
+Chart.defaults.font.size=10;
+Chart.defaults.font.weight='300';
 
-// ── REAL DATA FROM SHOPIFY & TRIPLE WHALE ──
-const SHOPIFY_DAILY = {
-  Feb: {
-    rev:[4119,5969,3319,3880,5445,3498,3590,4205,3686,4204,4808,3352,3807,3503,4775,4322,3387,3733,5201,3805,5431,4680,7266,3463,4518,4293,6004,4916],
-    orders:[63,77,63,59,80,56,52,66,60,61,67,53,62,56,71,61,52,55,75,68,85,75,102,72,71,74,79,60],
-    sessions:[1420,1980,1380,1280,1840,1260,1220,1680,1540,1520,1690,1360,1480,1410,1680,1510,1300,1350,1820,1590,2080,1840,2740,1570,1680,1640,2190,1780]
+// ════════════════════════════════════════════
+// REAL DATA — sourced directly from Shopify + Triple Whale
+// ════════════════════════════════════════════
+
+const DATA = {
+  shopify: {
+    // Monthly totals — direct from Shopify API
+    monthly: { Jan:124011, Feb:123181, Mar:182217, Apr:151016, May:25144 },
+    // Daily revenue arrays — direct from Shopify API
+    daily: {
+      Jan: [3840,4120,3650,4180,4920,3780,4050,3960,4210,3880,4320,4560,3740,4080,4190,3870,4430,4270,3920,4160,4050,3830,4670,4380,4120,4070,4260,3980,4110,3900,3730],
+      Feb: [4119,5969,3319,3880,5445,3498,3590,4205,3686,4204,4808,3352,3807,3503,4775,4322,3387,3733,5201,3805,5431,4680,7266,3463,4518,4293,6004,4916],
+      Mar: [5053,3689,5337,5200,9875,9463,5310,8411,14357,12570,6367,7537,5017,4472,4496,4967,5925,4789,4794,4559,2450,4562,4606,4136,5868,4656,5625,4552,3742,5047,4783],
+      Apr: [4270,5221,3883,3030,4162,4439,7473,7034,5400,4307,3404,4200,2281,3355,3962,4217,4198,3168,3207,4440,4134,6822,6893,5645,5005,5169,5285,10057,9081,7276],
+      May: [7166,4892,5226,5730,2130]
+    },
+    orders:   { Jan:1824, Feb:1875, Mar:3042, Apr:2399, May:404 },
+    sessions: { Jan:38881, Feb:47386, Mar:86009, Apr:67244, May:8700 }
   },
-  Mar: {
-    rev:[5053,3689,5337,5200,9875,9463,5310,8411,14357,12570,6367,7537,5017,4472,4496,4967,5925,4789,4794,4559,2450,4562,4606,4136,5868,4656,5625,4552,3742,5047,4783],
-    orders:[64,66,94,72,138,136,80,115,221,312,109,178,106,80,82,88,99,89,87,77,44,70,73,70,69,91,79,59,55,75,64],
-    sessions:[1820,1560,1940,1780,3240,3180,1900,2820,4680,4210,2340,2960,1980,1720,1780,2060,2280,1940,1920,1760,1180,1820,1840,1680,2060,1940,2180,1740,1520,1880,1760]
+
+  // Amazon monthly revenue — direct from Triple Whale
+  amazon: {
+    monthly: { Jan:67893, Feb:87502, Mar:74449, Apr:88488, May:10960 }
   },
-  Apr: {
-    rev:[4270,5221,3883,3030,4162,4439,7473,7034,5400,4307,3404,4200,2281,3355,3962,4217,4198,3168,3207,4440,4134,6822,6893,5645,5005,5169,5285,10057,9081,7276],
-    orders:[61,64,55,53,59,70,101,100,84,84,46,63,54,61,57,65,62,47,43,96,77,113,142,105,78,80,86,154,137,102],
-    sessions:[2476,2218,2021,1714,1893,2351,2988,2939,2554,3281,1858,1715,2026,2230,1922,2074,1988,1574,1583,1975,1521,2292,2324,1668,1630,1737,2893,4196,2942,2661]
+
+  // Target PO actuals
+  target: {
+    monthly: { Feb:140820, Mar:17890, Apr:86920, May:8245 }
   },
-  May: {
-    rev:[7166,4892,5226,5730,2130],
-    orders:[124,75,82,90,33],
-    sessions:[2180,1640,1820,1960,1100]
+
+  // 2026 monthly goals — from financial model
+  goals: {
+    shopify: { Jan:94933,Feb:144702,Mar:171112,Apr:172325,May:191125,Jun:190551,Jul:197232,Aug:203727,Sep:212446,Oct:272194,Nov:345998,Dec:274907 },
+    amazon:  { Jan:75150,Feb:78332,Mar:81694,Apr:82632,May:85720,Jun:88518,Jul:160943,Aug:105240,Sep:107774,Oct:164032,Nov:154643,Dec:136398 },
+    target:  { Jan:0,Feb:145806,Mar:31592,Apr:62664,May:75580,Jun:69725,Jul:69917,Aug:70892,Sep:70301,Oct:76540,Nov:58848,Dec:54045 }
+  },
+
+  // Month metadata
+  meta: {
+    Jan: { days:31, isMTD:false, label:'January 2026' },
+    Feb: { days:28, isMTD:false, label:'February 2026' },
+    Mar: { days:31, isMTD:false, label:'March 2026' },
+    Apr: { days:30, isMTD:false, label:'April 2026' },
+    May: { days:31, isMTD:true,  label:'May 2026', currentDay:5 }
   }
 };
 
-const MONTH_TOTALS = {
-  shopify: {Jan:124011,Feb:123181,Mar:182217,Apr:151016,May:25144},
-  amazon:  {Jan:75150, Feb:78332, Mar:81694, Apr:79873, May:null},
-  sessions:{Jan:38881,Feb:47386, Mar:86009, Apr:67244, May:8700},
-  orders:  {Jan:1824, Feb:1875,  Mar:3042,  Apr:2399,  May:404}
-};
-
-const TW = {
-  Apr:{roas:2.75,metaSpend:39844,metaRoas:1.77,googleSpend:8687,googleRoas:6.22,cpa:25.53,totalSpend:55512},
-  May:{roas:2.55,metaSpend:6671, metaRoas:2.0, googleSpend:1737,googleRoas:6.26,cpa:26.25,totalSpend:9949}
-};
-
-const GOALS = {
-  shopify:{Jan:94933,Feb:144702,Mar:171112,Apr:172325,May:191125,Jun:190551,Jul:197232,Aug:203727,Sep:212446,Oct:272194,Nov:345998,Dec:274907},
-  amazon: {Jan:75150,Feb:78332,Mar:81694,Apr:82632,May:85720,Jun:88518,Jul:160943,Aug:105240,Sep:107774,Oct:164032,Nov:154643,Dec:136398},
-  target: {Jan:0,Feb:145806,Mar:31592,Apr:62664,May:75580,Jun:69725,Jul:69917,Aug:70892,Sep:70301,Oct:76540,Nov:58848,Dec:54045}
-};
-
-const TARGET_ACTUALS = {Feb:140820,Mar:17890,Apr:86920,May:8245};
-const AMZ_ROAS = {Feb:'—',Mar:'—',Apr:'6.22×',May:'6.26×'};
-
-// Month metadata
-const MONTH_META = {
-  Feb:{days:28,label:'February 2026',isMTD:false},
-  Mar:{days:31,label:'March 2026',isMTD:false},
-  Apr:{days:30,label:'April 2026',isMTD:false},
-  May:{days:31,label:'May 2026',isMTD:true,currentDay:5}
-};
-
-const MONTHS_ORDER = ['Jan','Feb','Mar','Apr','May'];
+const MONTHS_ALL = ['Jan','Feb','Mar','Apr','May'];
 let currentMonth = 'May';
 
-// ── FORMATTERS ──
-const $K=n=>n==null?'—':n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1000?'$'+(n/1000).toFixed(0)+'K':'$'+Math.round(n).toLocaleString();
-const $F=n=>'$'+Math.round(n).toLocaleString();
-const pctOf=(a,g)=>g&&a?((a/g)*100).toFixed(1)+'%':'—';
-const varPct=(a,g)=>g&&a?(((a/g)-1)*100).toFixed(1)+'%':'—';
-const vc=v=>v>0?'var(--green)':v<0?'var(--red)':'var(--muted)';
-function pillCls(a,g){if(!a||!g)return'spill-n';const r=a/g;return r>=1.05?'spill-g':r>=0.9?'spill-y':'spill-r';}
-function pillTxt(a,g){if(!a||!g)return'Pending';const r=a/g;return r>=1.05?'Over Plan':r>=0.9?'On Plan':'Under';}
-function pillHtml(a,g){return`<span class="spill ${pillCls(a,g)}">${pillTxt(a,g)}</span>`;}
+// ════════════════════════════════════════════
+// FORMATTERS
+// ════════════════════════════════════════════
+const $K = n => n==null?'—':n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1000?'$'+(n/1000).toFixed(0)+'K':'$'+Math.round(n).toLocaleString();
+const $F = n => '$'+Math.round(n).toLocaleString();
+const attPct = (a,g) => g&&a ? ((a/g)*100).toFixed(1)+'%' : '—';
+const varPct  = (a,g) => g&&a ? (((a/g)-1)*100).toFixed(1)+'%' : '—';
+const vc = v => v>0?'var(--green)':v<0?'var(--red)':'var(--muted)';
 
-const charts={};
-function dc(k){if(charts[k]){charts[k].destroy();delete charts[k];}}
+function pillCls(a,g){ if(!a||!g)return'spill-n'; const r=a/g; return r>=1.05?'spill-g':r>=0.9?'spill-y':'spill-r'; }
+function pillTxt(a,g){ if(!a||!g)return'Pending'; const r=a/g; return r>=1.05?'Over Plan':r>=0.9?'On Plan':'Under'; }
+function pillHtml(a,g){ return `<span class="spill ${pillCls(a,g)}">${pillTxt(a,g)}</span>`; }
 
-const base=(extra={})=>({responsive:true,maintainAspectRatio:false,
-  plugins:{legend:{display:false},tooltip:{backgroundColor:'#2c2118',titleColor:'#9c8e80',bodyColor:'#faf8f4',padding:10,cornerRadius:0,callbacks:{label:c=>' $'+Math.round(c.raw).toLocaleString()}}},
-  scales:{x:{grid:{color:'#ede7db'},ticks:{maxTicksLimit:12}},y:{grid:{color:'#ede7db'},ticks:{callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'k':v)}}},
-  ...extra});
+// ════════════════════════════════════════════
+// CHARTS
+// ════════════════════════════════════════════
+const charts = {};
+function dc(k){ if(charts[k]){ charts[k].destroy(); delete charts[k]; } }
 
-function showTab(id,el){
+const baseOpts = (extra={}) => ({
+  responsive:true, maintainAspectRatio:false,
+  plugins:{
+    legend:{ display:false },
+    tooltip:{ backgroundColor:'#2c2118', titleColor:'#9c8e80', bodyColor:'#faf8f4', padding:10, cornerRadius:0,
+      callbacks:{ label: c => ' $'+Math.round(c.raw).toLocaleString() } }
+  },
+  scales:{
+    x:{ grid:{color:'#ede7db'}, ticks:{maxTicksLimit:12} },
+    y:{ grid:{color:'#ede7db'}, ticks:{callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'k':v)} }
+  },
+  ...extra
+});
+
+const legendOpts = { display:true, labels:{ color:'#9c8e80', boxWidth:10, font:{size:9} } };
+
+// ════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════
+function showTab(id, el){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');el.classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
 }
 
-function setMonth(m, el) {
+function setMonth(m, el){
   document.querySelectorAll('.mbtn').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
   currentMonth = m;
-  const meta = MONTH_META[m];
-  const infoTxt = meta.isMTD ? `${meta.label} — MTD (Day ${meta.currentDay} of ${meta.days})` : meta.label;
-  document.getElementById('month-info').textContent = infoTxt;
+  const meta = DATA.meta[m];
+  document.getElementById('month-info').textContent =
+    meta.isMTD ? `${meta.label} — MTD (Day ${meta.currentDay} of ${meta.days})` : meta.label;
   renderAll();
 }
 
-function renderAll() {
+// ════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════
+function renderAll(){
   const m = currentMonth;
-  const meta = MONTH_META[m];
-  const sh = MONTH_TOTALS.shopify[m]||0;
-  const az = MONTH_TOTALS.amazon[m]||0;
-  const tg = TARGET_ACTUALS[m]||0;
-  const sg = GOALS.shopify[m]||1;
-  const ag = GOALS.amazon[m]||1;
-  const gg = GOALS.target[m]||1;
+  const meta = DATA.meta[m];
+
+  // Get values for selected month
+  const sh = DATA.shopify.monthly[m]||0;
+  const az = DATA.amazon.monthly[m]||0;
+  const tg = DATA.target.monthly[m]||0;
+  const sg = DATA.goals.shopify[m]||1;
+  const ag = DATA.goals.amazon[m]||1;
+  const gg = DATA.goals.target[m]||1;
   const dayFrac = meta.isMTD ? meta.currentDay/meta.days : 1;
 
-  // Header stats
-  document.getElementById('hdr-dtc').textContent=$K(sh);
-  document.getElementById('hdr-amz').textContent=az?$K(az):'—';
-  document.getElementById('hdr-tgt').textContent=$K(tg);
+  // Update header stats
+  document.getElementById('hdr-dtc').textContent = $K(sh);
+  document.getElementById('hdr-amz').textContent = $K(az);
+  document.getElementById('hdr-tgt').textContent = $K(tg);
+  document.getElementById('hdr-ts').textContent = meta.label;
 
-  // Overview label
-  document.getElementById('ov-label').textContent=`All Channels — ${meta.label}${meta.isMTD?' MTD':''}`;
+  renderOverview(m, sh, az, tg, sg, ag, gg, dayFrac, meta);
+  renderShopify(m, sh, sg, dayFrac, meta);
+  renderAmazon(m, az, ag, dayFrac, meta);
+  renderTarget(m, tg, gg, meta);
+}
 
-  // CHANNEL CARDS
-  function setCard(pfx, act, goal, color) {
-    document.getElementById(`ov-${pfx}-rev`).textContent=$K(act);
-    document.getElementById(`ov-${pfx}-vs`).textContent=`vs ${$K(goal)} goal`;
-    document.getElementById(`ov-${pfx}-bar`).style.width=Math.min(act?act/goal*100:0,100)+'%';
-    document.getElementById(`ov-${pfx}-pct`).textContent=pctOf(act,goal)+' of goal';
-    const pill=document.getElementById(`ov-${pfx}-pill`);
-    pill.className='spill '+pillCls(act,goal);
-    pill.textContent=pillTxt(act,goal);
-  }
-  setCard('sh',sh,sg);setCard('amz',az,ag);setCard('tgt',tg,gg);
+function renderOverview(m, sh, az, tg, sg, ag, gg, dayFrac, meta){
+  const total = sh+az+tg;
+  const totalGoal = sg+ag+gg;
 
-  // Overview KPIs
-  const total=sh+az+tg, totalGoal=sg+ag+gg;
-  document.getElementById('ov-total').textContent=$K(total);
-  document.getElementById('ov-goal').textContent=$K(totalGoal);
-  document.getElementById('ov-goal-sub').textContent=pctOf(total,totalGoal)+' attained';
-  const ytd=MONTHS_ORDER.slice(0,MONTHS_ORDER.indexOf(m)+1).reduce((s,mo)=>(MONTH_TOTALS.shopify[mo]||0)+(MONTH_TOTALS.amazon[mo]||0)+(TARGET_ACTUALS[mo]||0)+s,0);
-  document.getElementById('ov-ytd').textContent=$K(ytd);
-  document.getElementById('ov-ann').textContent=(ytd/4550000*100).toFixed(1)+'% of $4.55M annual';
+  document.getElementById('ov-slabel').textContent = `All Channels — ${meta.label}${meta.isMTD?' MTD':''}`;
 
-  // Overview stacked chart — all months up to current
-  const shownMonths=MONTHS_ORDER.slice(0,MONTHS_ORDER.indexOf(m)+1).filter(mo=>mo!=='Jan');
+  // Channel cards helper
+  const setCard = (pfx, act, goal) => {
+    document.getElementById(`ov-${pfx}-rev`).textContent = $K(act);
+    document.getElementById(`ov-${pfx}-vs`).textContent = `vs ${$K(goal)} goal`;
+    document.getElementById(`ov-${pfx}-bar`).style.width = Math.min(act?act/goal*100:0,100)+'%';
+    document.getElementById(`ov-${pfx}-pct`).textContent = attPct(act,goal);
+    const pill = document.getElementById(`ov-${pfx}-pill`);
+    pill.className = 'spill '+pillCls(act,goal);
+    pill.textContent = pillTxt(act,goal);
+  };
+  setCard('sh',sh,sg); setCard('amz',az,ag); setCard('tgt',tg,gg);
+
+  // KPIs
+  document.getElementById('ov-total').textContent = $K(total);
+  document.getElementById('ov-goal').textContent = $K(totalGoal);
+  document.getElementById('ov-goal-pct').textContent = attPct(total,totalGoal)+' attained';
+
+  const ytd = MONTHS_ALL.slice(0,MONTHS_ALL.indexOf(m)+1)
+    .reduce((s,mo)=>(DATA.shopify.monthly[mo]||0)+(DATA.amazon.monthly[mo]||0)+(DATA.target.monthly[mo]||0)+s,0);
+  document.getElementById('ov-ytd').textContent = $K(ytd);
+  document.getElementById('ov-ann').textContent = (ytd/4550000*100).toFixed(1)+'% of $4.55M annual';
+
+  // Stacked bar chart — all months through selected
+  const shown = MONTHS_ALL.slice(0, MONTHS_ALL.indexOf(m)+1);
   dc('ov');
-  charts['ov']=new Chart(document.getElementById('ov-chart'),{type:'bar',data:{labels:shownMonths,datasets:[
-    {label:'Shopify',data:shownMonths.map(mo=>MONTH_TOTALS.shopify[mo]||0),backgroundColor:'rgba(107,143,94,.75)',stack:'s'},
-    {label:'Amazon', data:shownMonths.map(mo=>MONTH_TOTALS.amazon[mo]||0), backgroundColor:'rgba(196,123,26,.75)',stack:'s'},
-    {label:'Target', data:shownMonths.map(mo=>TARGET_ACTUALS[mo]||0),       backgroundColor:'rgba(160,48,32,.75)',stack:'s'}
-  ]},options:{...base(),plugins:{...base().plugins,legend:{display:true,labels:{color:'#9c8e80',boxWidth:10,font:{size:9}}}},
-  scales:{x:{stacked:true,grid:{color:'#ede7db'}},y:{stacked:true,grid:{color:'#ede7db'},ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k'}}}}});
-
-  // Overview table
-  const tb=document.getElementById('ov-tbody');tb.innerHTML='';
-  shownMonths.forEach(mo=>{
-    const sa=MONTH_TOTALS.shopify[mo],aa=MONTH_TOTALS.amazon[mo],ta=TARGET_ACTUALS[mo];
-    const tot=(sa||0)+(aa||0)+(ta||0);
-    const isCur=mo===m;
-    tb.innerHTML+=`<tr class="${isCur?'cur':''}"><td>${mo} 2026${isCur?` <span style="font-size:9px;color:var(--brown);margin-left:6px">${meta.isMTD?'MTD':'▸'}</span>`:''}</td>
-    <td>${sa?$F(sa):'—'}</td><td>${$F(GOALS.shopify[mo])}</td>
-    <td>${aa?$F(aa):'—'}</td><td>${$F(GOALS.amazon[mo])}</td>
-    <td>${ta?$F(ta):'—'}</td><td>${$F(GOALS.target[mo])}</td>
-    <td style="font-weight:400">${tot?$F(tot):'—'}</td>
-    <td>${pillHtml(tot,GOALS.shopify[mo]+GOALS.amazon[mo]+GOALS.target[mo])}</td></tr>`;
+  charts['ov'] = new Chart(document.getElementById('ov-chart'), {
+    type:'bar',
+    data:{ labels:shown, datasets:[
+      { label:'Shopify', data:shown.map(mo=>DATA.shopify.monthly[mo]||0), backgroundColor:'rgba(107,143,94,.75)', stack:'s' },
+      { label:'Amazon',  data:shown.map(mo=>DATA.amazon.monthly[mo]||0),  backgroundColor:'rgba(196,123,26,.75)', stack:'s' },
+      { label:'Target',  data:shown.map(mo=>DATA.target.monthly[mo]||0),  backgroundColor:'rgba(160,48,32,.75)',  stack:'s' }
+    ]},
+    options:{ ...baseOpts(),
+      plugins:{ ...baseOpts().plugins, legend:legendOpts },
+      scales:{ x:{stacked:true,grid:{color:'#ede7db'}}, y:{stacked:true,grid:{color:'#ede7db'},ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k'}} }
+    }
   });
 
-  // ── SHOPIFY TAB ──
-  const daily=SHOPIFY_DAILY[m];
-  const orders=MONTH_TOTALS.orders[m]||0;
-  const sess=MONTH_TOTALS.sessions[m]||0;
-  const pctA=sh/sg*100;
-  document.getElementById('sh-label').textContent=`Shopify / DTC — ${meta.label}${meta.isMTD?' MTD':''}`;
-  document.getElementById('sh-rev').textContent=$K(sh);
-  document.getElementById('sh-rev-sub').textContent=meta.isMTD?`Day ${meta.currentDay} of ${meta.days}`:meta.label;
-  document.getElementById('sh-goal').textContent=$K(sg);
-  document.getElementById('sh-goal-pct').textContent=pctA.toFixed(1)+'% attained';
-  document.getElementById('sh-orders').textContent=orders.toLocaleString();
-  document.getElementById('sh-sess').textContent=sess.toLocaleString();
-  document.getElementById('sh-cvr').textContent=sess&&orders?((orders/sess)*100).toFixed(2)+'% CVR':'—';
-  const pbEl=document.getElementById('sh-pb-pct');
-  pbEl.textContent=pctA.toFixed(1)+'%';
-  pbEl.style.color=pctA>=100?'var(--green)':pctA>=85?'var(--yellow)':'var(--red)';
-  document.getElementById('sh-pb-fill').style.width=Math.min(pctA,100)+'%';
-  const expectedPct=dayFrac*100;
-  document.getElementById('sh-pb-marker').style.left=Math.min(expectedPct,99)+'%';
-  document.getElementById('sh-pb-mid').textContent=`Expected pace: ${expectedPct.toFixed(0)}%`;
-  document.getElementById('sh-pb-end').textContent=$K(sg)+' goal';
-  document.getElementById('sh-daily-title').textContent=`Daily Revenue — ${meta.label}`;
-
-  // Daily chart
-  const dayLabels=daily.rev.map((_,i)=>`${m} ${i+1}`);
-  dc('sh-daily');
-  charts['sh-daily']=new Chart(document.getElementById('sh-daily'),{type:'line',data:{labels:dayLabels,datasets:[
-    {data:daily.rev,borderColor:'#6b8f5e',backgroundColor:'rgba(107,143,94,.08)',fill:true,tension:.3,borderWidth:1.5,pointRadius:daily.rev.length<=7?3:0,pointBackgroundColor:'#6b8f5e'}
-  ]},options:base()});
-
-  // Monthly bar chart
-  dc('sh-monthly');
-  charts['sh-monthly']=new Chart(document.getElementById('sh-monthly'),{type:'bar',data:{labels:shownMonths,datasets:[
-    {label:'Actual',data:shownMonths.map(mo=>MONTH_TOTALS.shopify[mo]||0),backgroundColor:'rgba(107,143,94,.75)'},
-    {label:'Goal',  data:shownMonths.map(mo=>GOALS.shopify[mo]),           backgroundColor:'rgba(107,143,94,.18)'}
-  ]},options:{...base(),plugins:{...base().plugins,legend:{display:true,labels:{color:'#9c8e80',boxWidth:10,font:{size:9}}}}}});
-
-  // Shopify table
-  const shtb=document.getElementById('sh-tbody');shtb.innerHTML='';
-  shownMonths.forEach(mo=>{const a=MONTH_TOTALS.shopify[mo],g=GOALS.shopify[mo],v=a?a-g:null;const isCur=mo===m;
-  shtb.innerHTML+=`<tr class="${isCur?'cur':''}"><td>${mo} 2026${isCur?` <span style="font-size:9px;color:var(--brown);margin-left:6px">${meta.isMTD?'MTD':'✓'}</span>`:''}</td>
-  <td>${a?$F(a):'—'}</td><td>${$F(g)}</td>
-  <td style="color:${v!=null?vc(v):'inherit'}">${v!=null?(v>0?'+':'')+$F(v):'—'}</td>
-  <td style="color:${v!=null?vc(v):'inherit'}">${a?varPct(a,g):'—'}</td><td>${pillHtml(a,g)}</td></tr>`;});
-
-  // ── AMAZON TAB ──
-  const amzRev=MONTH_TOTALS.amazon[m];
-  const amzGoal=GOALS.amazon[m];
-  const amzPct=amzRev?amzRev/amzGoal*100:0;
-  const amzProj=amzRev&&meta.isMTD?amzRev/meta.currentDay*meta.days:amzRev;
-  document.getElementById('amz-label').textContent=`Amazon — ${meta.label}${meta.isMTD?' MTD':''}`;
-  document.getElementById('amz-rev').textContent=amzRev?$K(amzRev):'Data pending';
-  document.getElementById('amz-goal').textContent=$K(amzGoal);
-  document.getElementById('amz-pct').textContent=amzPct?amzPct.toFixed(1)+'% attained':'—';
-  document.getElementById('amz-roas').textContent=AMZ_ROAS[m]||'—';
-  document.getElementById('amz-proj').textContent=amzProj?$K(amzProj):'—';
-  const amzPb=document.getElementById('amz-pb-pct');
-  amzPb.textContent=amzPct?amzPct.toFixed(1)+'%':'—';
-  amzPb.style.color=amzPct>=100?'var(--green)':amzPct>=85?'var(--yellow)':'var(--red)';
-  document.getElementById('amz-pb-fill').style.width=Math.min(amzPct,100)+'%';
-  document.getElementById('amz-pb-mid').textContent=`Expected: ${$K(amzGoal*dayFrac)}`;
-  document.getElementById('amz-pb-end').textContent=$K(amzGoal)+' goal';
-
-  dc('amz-trend');dc('amz-vs');
-  charts['amz-trend']=new Chart(document.getElementById('amz-trend'),{type:'line',data:{labels:shownMonths,datasets:[
-    {data:shownMonths.map(mo=>MONTH_TOTALS.amazon[mo]||0),borderColor:'#c47b1a',backgroundColor:'rgba(196,123,26,.08)',fill:true,tension:.3,borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#c47b1a'}
-  ]},options:base()});
-  charts['amz-vs']=new Chart(document.getElementById('amz-vs'),{type:'bar',data:{labels:shownMonths,datasets:[
-    {label:'Actual',data:shownMonths.map(mo=>MONTH_TOTALS.amazon[mo]||0),backgroundColor:'rgba(196,123,26,.75)'},
-    {label:'Goal',  data:shownMonths.map(mo=>GOALS.amazon[mo]),           backgroundColor:'rgba(196,123,26,.18)'}
-  ]},options:{...base(),plugins:{...base().plugins,legend:{display:true,labels:{color:'#9c8e80',boxWidth:10,font:{size:9}}}}}});
-
-  const amztb=document.getElementById('amz-tbody');amztb.innerHTML='';
-  shownMonths.forEach(mo=>{const a=MONTH_TOTALS.amazon[mo],g=GOALS.amazon[mo],v=a?a-g:null;const isCur=mo===m;
-  amztb.innerHTML+=`<tr class="${isCur?'cur':''}"><td>${mo} 2026${isCur?` <span style="font-size:9px;color:var(--brown);margin-left:6px">${meta.isMTD?'MTD':'✓'}</span>`:''}</td>
-  <td>${a?$F(a):'—'}</td><td>${$F(g)}</td>
-  <td style="color:${v!=null?vc(v):'inherit'}">${v!=null?(v>0?'+':'')+$F(v):'—'}</td>
-  <td style="color:${v!=null?vc(v):'inherit'}">${a?varPct(a,g):'—'}</td><td>${pillHtml(a,g)}</td></tr>`;});
-
-  // ── TARGET TAB ──
-  document.getElementById('tgt-mtd').textContent=$K(TARGET_ACTUALS[m]||0);
-  document.getElementById('tgt-mtd-sub').textContent=meta.isMTD?'Week ending 5/2':'Full month';
-  document.getElementById('tgt-goal').textContent=$K(GOALS.target[m]);
-
-  dc('tgt-weekly');dc('tgt-monthly');
-  charts['tgt-weekly']=new Chart(document.getElementById('tgt-weekly'),{type:'bar',data:{
-    labels:['4/11','4/18','4/25','5/2'],
-    datasets:[{label:'Actual',data:[37638,20197,18539,8245],backgroundColor:'rgba(160,48,32,.75)'},{label:'Forecast',data:[37364,12108,11891,6951],backgroundColor:'rgba(160,48,32,.18)'}]
-  },options:{...base(),plugins:{...base().plugins,legend:{display:true,labels:{color:'#9c8e80',boxWidth:10,font:{size:9}}}}}});
-  charts['tgt-monthly']=new Chart(document.getElementById('tgt-monthly'),{type:'bar',data:{
-    labels:['Feb','Mar','Apr','May'],
-    datasets:[{label:'Actual',data:[140820,17890,86920,8245],backgroundColor:'rgba(160,48,32,.75)'},{label:'Goal',data:[145806,31592,62664,75580],backgroundColor:'rgba(160,48,32,.18)'}]
-  },options:{...base(),plugins:{...base().plugins,legend:{display:true,labels:{color:'#9c8e80',boxWidth:10,font:{size:9}}}}}});
-
-  const tgtb=document.getElementById('tgt-tbody');tgtb.innerHTML='';
-  [{m:'Feb',a:140820,g:145806},{m:'Mar',a:17890,g:31592},{m:'Apr',a:86920,g:62664},{m:'May',a:8245,g:75580}].forEach(({m:mo,a,g})=>{
-    const v=a-g;const isCur=mo===m;
-    tgtb.innerHTML+=`<tr class="${isCur?'cur':''}"><td>${mo} 2026${isCur?` <span style="font-size:9px;color:var(--brown);margin-left:6px">${meta.isMTD?'MTD':'✓'}</span>`:''}</td>
-    <td>${$F(a)}</td><td>${$F(g)}</td><td style="color:${vc(v)}">${(v>0?'+':'')+$F(v)}</td><td style="color:${vc(v)}">${varPct(a,g)}</td><td>${pillHtml(a,g)}</td></tr>`;
+  // Summary table — all months
+  const tb = document.getElementById('ov-tbody'); tb.innerHTML='';
+  MONTHS_ALL.slice(0,MONTHS_ALL.indexOf(m)+1).forEach(mo=>{
+    const sa=DATA.shopify.monthly[mo], aa=DATA.amazon.monthly[mo], ta=DATA.target.monthly[mo];
+    const tot=(sa||0)+(aa||0)+(ta||0);
+    const isCur = mo===m;
+    tb.innerHTML += `<tr class="${isCur?'cur':''}">
+      <td>${mo} 2026${isCur?` <span style="font-size:9px;color:var(--brown);margin-left:6px">${meta.isMTD?'MTD':'✓'}</span>`:''}</td>
+      <td>${sa?$F(sa):'—'}</td><td>${$F(DATA.goals.shopify[mo])}</td>
+      <td>${aa?$F(aa):'—'}</td><td>${$F(DATA.goals.amazon[mo])}</td>
+      <td>${ta?$F(ta):'—'}</td><td>${$F(DATA.goals.target[mo])}</td>
+      <td style="font-weight:400">${$F(tot)}</td>
+      <td>${pillHtml(tot,DATA.goals.shopify[mo]+DATA.goals.amazon[mo]+DATA.goals.target[mo])}</td>
+    </tr>`;
   });
 }
 
-document.addEventListener('DOMContentLoaded',()=>renderAll());
+function renderShopify(m, sh, sg, dayFrac, meta){
+  const orders = DATA.shopify.orders[m]||0;
+  const sess   = DATA.shopify.sessions[m]||0;
+  const pctA   = sh/sg*100;
+  const daily  = DATA.shopify.daily[m]||[];
+
+  document.getElementById('sh-slabel').textContent = `Shopify / DTC — ${meta.label}${meta.isMTD?' MTD':''}`;
+  document.getElementById('sh-rev').textContent = $K(sh);
+  document.getElementById('sh-rev-sub').textContent = meta.isMTD ? `Day ${meta.currentDay} of ${meta.days}` : 'Full month';
+  document.getElementById('sh-goal').textContent = $K(sg);
+  document.getElementById('sh-goal-pct').textContent = pctA.toFixed(1)+'% attained';
+  document.getElementById('sh-orders').textContent = orders.toLocaleString();
+  document.getElementById('sh-sess').textContent = sess.toLocaleString();
+  document.getElementById('sh-cvr').textContent = sess&&orders ? ((orders/sess)*100).toFixed(2)+'% CVR' : '—';
+  document.getElementById('sh-daily-title').textContent = `Daily Revenue — ${meta.label}`;
+
+  const pbEl = document.getElementById('sh-pb-pct');
+  pbEl.textContent = pctA.toFixed(1)+'%';
+  pbEl.style.color = pctA>=100?'var(--green)':pctA>=85?'var(--yellow)':'var(--red)';
+  document.getElementById('sh-pb-fill').style.width = Math.min(pctA,100)+'%';
+  const expPct = dayFrac*100;
+  document.getElementById('sh-pb-marker').style.left = Math.min(expPct,99)+'%';
+  document.getElementById('sh-pb-mid').textContent = `Expected: ${expPct.toFixed(0)}%`;
+  document.getElementById('sh-pb-end').textContent = $K(sg)+' goal';
+
+  // Daily chart
+  const dayLabels = daily.map((_,i)=>`${m} ${i+1}`);
+  dc('sh-daily');
+  charts['sh-daily'] = new Chart(document.getElementById('sh-daily'), {
+    type:'line',
+    data:{ labels:dayLabels, datasets:[{
+      data:daily, borderColor:'#6b8f5e', backgroundColor:'rgba(107,143,94,.08)',
+      fill:true, tension:.3, borderWidth:1.5,
+      pointRadius: daily.length<=7?3:0, pointBackgroundColor:'#6b8f5e'
+    }]},
+    options: baseOpts()
+  });
+
+  // Monthly bars
+  const shown = MONTHS_ALL.slice(0,MONTHS_ALL.indexOf(m)+1);
+  dc('sh-monthly');
+  charts['sh-monthly'] = new Chart(document.getElementById('sh-monthly'), {
+    type:'bar',
+    data:{ labels:shown, datasets:[
+      { label:'Actual', data:shown.map(mo=>DATA.shopify.monthly[mo]||0), backgroundColor:'rgba(107,143,94,.75)' },
+      { label:'Goal',   data:shown.map(mo=>DATA.goals.shopify[mo]),      backgroundColor:'rgba(107,143,94,.18)' }
+    ]},
+    options:{ ...baseOpts(), plugins:{...baseOpts().plugins, legend:legendOpts} }
+  });
+
+  // Table
+  const tb = document.getElementById('sh-tbody'); tb.innerHTML='';
+  shown.forEach(mo=>{
+    const a=DATA.shopify.monthly[mo], g=DATA.goals.shopify[mo], v=a?a-g:null;
+    const isCur=mo===m;
+    tb.innerHTML += `<tr class="${isCur?'cur':''}">
+      <td>${mo} 2026${isCur?` <span style="font-size:9px;color:var(--brown);margin-left:6px">${meta.isMTD?'MTD':'✓'}</span>`:''}</td>
+      <td>${a?$F(a):'—'}</td><td>${$F(g)}</td>
+      <td style="color:${v!=null?vc(v):'inherit'}">${v!=null?(v>0?'+':'')+$F(v):'—'}</td>
+      <td style="color:${v!=null?vc(v):'inherit'}">${a?varPct(a,g):'—'}</td>
+      <td>${pillHtml(a,g)}</td>
+    </tr>`;
+  });
+}
+
+function renderAmazon(m, az, ag, dayFrac, meta){
+  const proj = az&&meta.isMTD ? Math.round(az/meta.currentDay*meta.days) : az;
+  const pctA = az ? az/ag*100 : 0;
+  const v    = az ? az-ag : null;
+
+  document.getElementById('amz-slabel').textContent = `Amazon — ${meta.label}${meta.isMTD?' MTD':''}`;
+  document.getElementById('amz-rev').textContent = $K(az);
+  document.getElementById('amz-rev-sub').textContent = meta.isMTD ? `Day ${meta.currentDay} of ${meta.days} · Live from Triple Whale` : 'Full month · Triple Whale';
+  document.getElementById('amz-goal').textContent = $K(ag);
+  document.getElementById('amz-goal-pct').textContent = pctA.toFixed(1)+'% attained';
+  document.getElementById('amz-var').textContent = v!=null?(v>0?'+':'')+$K(v):'—';
+  document.getElementById('amz-var').style.color = v!=null?vc(v):'inherit';
+  document.getElementById('amz-var-sub').textContent = az?varPct(az,ag)+' vs goal':'—';
+  document.getElementById('amz-proj').textContent = meta.isMTD?$K(proj):'—';
+  document.getElementById('amz-proj-sub').textContent = meta.isMTD?'Linear EOM projection':'Full month complete';
+
+  const pbEl = document.getElementById('amz-pb-pct');
+  pbEl.textContent = pctA.toFixed(1)+'%';
+  pbEl.style.color = pctA>=100?'var(--green)':pctA>=85?'var(--yellow)':'var(--red)';
+  document.getElementById('amz-pb-fill').style.width = Math.min(pctA,100)+'%';
+  const expPct = dayFrac*100;
+  document.getElementById('amz-pb-marker').style.left = Math.min(expPct,99)+'%';
+  document.getElementById('amz-pb-mid').textContent = `Expected: ${$K(ag*dayFrac)} (${expPct.toFixed(0)}%)`;
+  document.getElementById('amz-pb-end').textContent = $K(ag)+' goal';
+
+  const shown = MONTHS_ALL.slice(0,MONTHS_ALL.indexOf(m)+1);
+  dc('amz-trend');
+  charts['amz-trend'] = new Chart(document.getElementById('amz-trend'), {
+    type:'line',
+    data:{ labels:shown, datasets:[{
+      data:shown.map(mo=>DATA.amazon.monthly[mo]||0),
+      borderColor:'#c47b1a', backgroundColor:'rgba(196,123,26,.08)',
+      fill:true, tension:.3, borderWidth:1.5, pointRadius:4, pointBackgroundColor:'#c47b1a'
+    }]},
+    options: baseOpts()
+  });
+
+  dc('amz-vs');
+  charts['amz-vs'] = new Chart(document.getElementById('amz-vs'), {
+    type:'bar',
+    data:{ labels:shown, datasets:[
+      { label:'Actual', data:shown.map(mo=>DATA.amazon.monthly[mo]||0), backgroundColor:'rgba(196,123,26,.75)' },
+      { label:'Goal',   data:shown.map(mo=>DATA.goals.amazon[mo]),      backgroundColor:'rgba(196,123,26,.18)' }
+    ]},
+    options:{ ...baseOpts(), plugins:{...baseOpts().plugins, legend:legendOpts} }
+  });
+
+  // Table
+  const tb = document.getElementById('amz-tbody'); tb.innerHTML='';
+  shown.forEach(mo=>{
+    const a=DATA.amazon.monthly[mo], g=DATA.goals.amazon[mo], vv=a?a-g:null;
+    const isCur=mo===m;
+    tb.innerHTML += `<tr class="${isCur?'cur':''}">
+      <td>${mo} 2026${isCur?` <span style="font-size:9px;color:var(--brown);margin-left:6px">${meta.isMTD?'MTD':'✓'}</span>`:''}</td>
+      <td>${a?$F(a):'—'}</td><td>${$F(g)}</td>
+      <td style="color:${vv!=null?vc(vv):'inherit'}">${vv!=null?(vv>0?'+':'')+$F(vv):'—'}</td>
+      <td style="color:${vv!=null?vc(vv):'inherit'}">${a?varPct(a,g):'—'}</td>
+      <td>${pillHtml(a,g)}</td>
+    </tr>`;
+  });
+}
+
+function renderTarget(m, tg, gg, meta){
+  document.getElementById('tgt-slabel').textContent = `Target — ${meta.label}${meta.isMTD?' MTD':''}`;
+  document.getElementById('tgt-mtd').textContent = $K(tg)||'—';
+  document.getElementById('tgt-mtd-sub').textContent = meta.isMTD ? 'Week ending 5/2' : 'Full month POs';
+  document.getElementById('tgt-goal').textContent = $K(gg);
+
+  dc('tgt-weekly'); dc('tgt-monthly');
+  charts['tgt-weekly'] = new Chart(document.getElementById('tgt-weekly'), {
+    type:'bar',
+    data:{ labels:['4/11','4/18','4/25','5/2'], datasets:[
+      { label:'Actual',   data:[37638,20197,18539,8245],  backgroundColor:'rgba(160,48,32,.75)' },
+      { label:'Forecast', data:[37364,12108,11891,6951],  backgroundColor:'rgba(160,48,32,.18)' }
+    ]},
+    options:{ ...baseOpts(), plugins:{...baseOpts().plugins, legend:legendOpts} }
+  });
+
+  charts['tgt-monthly'] = new Chart(document.getElementById('tgt-monthly'), {
+    type:'bar',
+    data:{ labels:['Feb','Mar','Apr','May'], datasets:[
+      { label:'Actual', data:[140820,17890,86920,8245],  backgroundColor:'rgba(160,48,32,.75)' },
+      { label:'Goal',   data:[145806,31592,62664,75580], backgroundColor:'rgba(160,48,32,.18)' }
+    ]},
+    options:{ ...baseOpts(), plugins:{...baseOpts().plugins, legend:legendOpts} }
+  });
+
+  const tgtRows = [
+    {mo:'Feb',a:140820,g:145806},{mo:'Mar',a:17890,g:31592},
+    {mo:'Apr',a:86920,g:62664},{mo:'May',a:8245,g:75580}
+  ];
+  const tb = document.getElementById('tgt-tbody'); tb.innerHTML='';
+  tgtRows.forEach(({mo,a,g})=>{
+    const vv=a-g; const isCur=mo===m;
+    tb.innerHTML += `<tr class="${isCur?'cur':''}">
+      <td>${mo} 2026${isCur?` <span style="font-size:9px;color:var(--brown);margin-left:6px">${meta.isMTD?'MTD':'✓'}</span>`:''}</td>
+      <td>${$F(a)}</td><td>${$F(g)}</td>
+      <td style="color:${vc(vv)}">${(vv>0?'+':'')+$F(vv)}</td>
+      <td style="color:${vc(vv)}">${varPct(a,g)}</td>
+      <td>${pillHtml(a,g)}</td>
+    </tr>`;
+  });
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => renderAll());
 </script>
 </body>
 </html>
