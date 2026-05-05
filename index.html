@@ -269,13 +269,13 @@ input[type=file]{display:none}
   <div class="kg g4">
     <div class="kpi"><div class="kpi-lbl">Month Actuals</div><div class="kpi-val" id="tgt-mtd">—</div><div class="kpi-sub" id="tgt-mtd-sub">—</div></div>
     <div class="kpi"><div class="kpi-lbl">Monthly Goal</div><div class="kpi-val" id="tgt-goal">—</div></div>
-    <div class="kpi"><div class="kpi-lbl">YTD Actuals</div><div class="kpi-val">$253,875</div><div class="badge bg">+8.6% vs pace</div></div>
-    <div class="kpi"><div class="kpi-lbl">Annual Goal</div><div class="kpi-val">$741,373</div><div class="kpi-sub">34.2% complete</div></div>
+    <div class="kpi"><div class="kpi-lbl">YTD Actuals</div><div class="kpi-val">$242,068</div><div class="badge bg">+8.6% vs pace</div></div>
+    <div class="kpi"><div class="kpi-lbl">Annual Goal</div><div class="kpi-val">$741,373</div><div class="kpi-sub">32.7% complete</div></div>
   </div>
   <div class="pb">
-    <div class="pb-hdr"><div class="pb-ttl">YTD Annual Goal Attainment</div><div class="pb-pct" style="color:var(--green)">34.2%</div></div>
-    <div class="pb-track"><div class="pb-fill" style="background:var(--target);width:34.2%"></div><div class="pb-marker" style="left:33.5%"></div></div>
-    <div class="pb-labels"><span>$0</span><span>Expected pace: 33.5%</span><span>$741K goal</span></div>
+    <div class="pb-hdr"><div class="pb-ttl">YTD Annual Goal Attainment</div><div class="pb-pct" style="color:var(--green)">32.7%</div></div>
+    <div class="pb-track"><div class="pb-fill" style="background:var(--target);width:32.7%"></div><div class="pb-marker" style="left:32.2%"></div></div>
+    <div class="pb-labels"><span>$0</span><span>Expected pace: 32.2%</span><span>$741K goal</span></div>
   </div>
   <div class="cg cg2">
     <div class="cc"><div class="ct">Weekly Actual vs Forecast</div><div class="h240"><canvas id="tgt-weekly"></canvas></div></div>
@@ -322,7 +322,7 @@ const DATA = {
 
   // Target PO actuals
   target: {
-    monthly: { Feb:140820, Mar:17890, Apr:86920, May:8245 }
+    monthly: { Feb:140820, Mar:17890, Apr:66080, May:17278 }
   },
 
   // 2026 monthly goals — from financial model
@@ -619,15 +619,15 @@ function renderAmazon(m, az, ag, dayFrac, meta){
 function renderTarget(m, tg, gg, meta){
   document.getElementById('tgt-slabel').textContent = `Target — ${meta.label}${meta.isMTD?' MTD':''}`;
   document.getElementById('tgt-mtd').textContent = $K(tg)||'—';
-  document.getElementById('tgt-mtd-sub').textContent = meta.isMTD ? 'Week ending 5/2' : 'Full month POs';
+  document.getElementById('tgt-mtd-sub').textContent = meta.isMTD ? 'POs through May 4' : 'Full month POs';
   document.getElementById('tgt-goal').textContent = $K(gg);
 
   dc('tgt-weekly'); dc('tgt-monthly');
   charts['tgt-weekly'] = new Chart(document.getElementById('tgt-weekly'), {
     type:'bar',
-    data:{ labels:['4/11','4/18','4/25','5/2'], datasets:[
-      { label:'Actual',   data:[37638,20197,18539,8245],  backgroundColor:'rgba(160,48,32,.75)' },
-      { label:'Forecast', data:[37364,12108,11891,6951],  backgroundColor:'rgba(160,48,32,.18)' }
+    data:{ labels:['4/6','4/13','4/27','5/4'], datasets:[
+      { label:'Actual',   data:[37638,20197,8245,17278],  backgroundColor:'rgba(160,48,32,.75)' },
+      { label:'Forecast', data:[37364,12108,6951,14000],  backgroundColor:'rgba(160,48,32,.18)' }
     ]},
     options:{ ...baseOpts(), plugins:{...baseOpts().plugins, legend:legendOpts} }
   });
@@ -635,7 +635,7 @@ function renderTarget(m, tg, gg, meta){
   charts['tgt-monthly'] = new Chart(document.getElementById('tgt-monthly'), {
     type:'bar',
     data:{ labels:['Feb','Mar','Apr','May'], datasets:[
-      { label:'Actual', data:[140820,17890,86920,8245],  backgroundColor:'rgba(160,48,32,.75)' },
+      { label:'Actual', data:[140820,17890,66080,17278],  backgroundColor:'rgba(160,48,32,.75)' },
       { label:'Goal',   data:[145806,31592,62664,75580], backgroundColor:'rgba(160,48,32,.18)' }
     ]},
     options:{ ...baseOpts(), plugins:{...baseOpts().plugins, legend:legendOpts} }
@@ -643,7 +643,7 @@ function renderTarget(m, tg, gg, meta){
 
   const tgtRows = [
     {mo:'Feb',a:140820,g:145806},{mo:'Mar',a:17890,g:31592},
-    {mo:'Apr',a:86920,g:62664},{mo:'May',a:8245,g:75580}
+    {mo:'Apr',a:66080,g:62664},{mo:'May',a:17278,g:75580}
   ];
   const tb = document.getElementById('tgt-tbody'); tb.innerHTML='';
   tgtRows.forEach(({mo,a,g})=>{
