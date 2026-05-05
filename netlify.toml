@@ -1,0 +1,13 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Scheduled function - Monday 9am CT = 14:00 UTC
+[[plugins]]
+  package = "@netlify/plugin-functions-install-core"
+
+[dev]
+  targetPort = 3000

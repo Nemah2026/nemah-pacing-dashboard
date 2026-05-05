@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nēmah — Pacing Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:    #faf8f4;
+  --warm:     #f3efe7;
+  --warm2:    #ede7db;
+  --border:   #ddd6c8;
+  --border2:  #c9beae;
+  --espresso: #2c2118;
+  --brown:    #5c4033;
+  --muted:    #9c8e80;
+  --light:    #bdb0a0;
+  --green:    #5a7a52;
+  --yellow:   #a87c2a;
+  --red:      #9e3a2a;
+  --shopify:  #6b8f5e;
+  --amazon:   #c47b1a;
+  --target:   #a03020;
+  --shadow:   0 1px 3px rgba(44,33,24,.06), 0 4px 16px rgba(44,33,24,.04);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--cream); color:var(--espresso); font-family:'Jost',sans-serif; font-weight:300; min-height:100vh; }
+
+/* ── HEADER ── */
+.header {
+  background:var(--espresso);
+  padding:0 48px;
+  display:flex; align-items:center; justify-content:space-between;
+  height:64px; position:sticky; top:0; z-index:200;
+}
+.header-brand { display:flex; align-items:center; gap:20px; }
+.logo { font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:300; font-style:italic; color:var(--cream); letter-spacing:.5px; }
+.header-divider { width:1px; height:20px; background:rgba(250,248,244,.15); }
+.dash-name { font-size:10px; text-transform:uppercase; letter-spacing:4px; color:rgba(250,248,244,.45); font-weight:400; }
+.header-stats { display:flex; align-items:center; gap:32px; }
+.hstat { text-align:right; }
+.hstat-label { font-size:8px; text-transform:uppercase; letter-spacing:2.5px; color:rgba(250,248,244,.4); margin-bottom:2px; }
+.hstat-value { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:300; color:var(--cream); }
+.live-pill { display:flex; align-items:center; gap:6px; font-size:8px; text-transform:uppercase; letter-spacing:2px; color:#a8c9a0; border:1px solid rgba(168,201,160,.3); padding:4px 10px; }
+.live-dot { width:5px; height:5px; border-radius:50%; background:#a8c9a0; animation:pulse 2.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+
+/* ── NAV ── */
+.nav { background:var(--warm); border-bottom:1px solid var(--border); padding:0 48px; display:flex; gap:0; }
+.tab { padding:14px 24px; font-size:10px; text-transform:uppercase; letter-spacing:2.5px; color:var(--muted); cursor:pointer; border-bottom:1.5px solid transparent; transition:all .2s; display:flex; align-items:center; gap:8px; font-weight:400; }
+.tab:hover { color:var(--espresso); }
+.tab.active { color:var(--espresso); border-bottom-color:var(--espresso); }
+.tab-pip { width:6px; height:6px; border-radius:50%; }
+
+/* ── MAIN ── */
+.main { padding:36px 48px; max-width:1440px; margin:0 auto; }
+.view { display:none; }
+.view.active { display:block; }
+
+/* ── SECTION LABEL ── */
+.slabel { font-size:8px; text-transform:uppercase; letter-spacing:3.5px; color:var(--light); margin-bottom:20px; margin-top:36px; display:flex; align-items:center; gap:14px; font-weight:400; }
+.slabel:first-child { margin-top:0; }
+.slabel::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ── CHANNEL CARDS ── */
+.channel-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); margin-bottom:28px; box-shadow:var(--shadow); }
+.ch-card { background:var(--warm); padding:28px; position:relative; overflow:hidden; }
+.ch-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+.ch-card.shopify::before { background:var(--shopify); }
+.ch-card.amazon::before { background:var(--amazon); }
+.ch-card.target::before { background:var(--target); }
+.ch-label { font-size:8px; text-transform:uppercase; letter-spacing:3px; color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.ch-pip { width:6px; height:6px; border-radius:50%; }
+.ch-revenue { font-family:'Cormorant Garamond',serif; font-size:44px; font-weight:300; line-height:1; margin-bottom:6px; }
+.ch-vs { font-size:10px; color:var(--muted); margin-bottom:14px; }
+.mini-track { height:2px; background:var(--warm2); margin-bottom:5px; }
+.mini-fill { height:100%; transition:width 1.2s cubic-bezier(.4,0,.2,1); }
+.mini-labels { font-size:9px; color:var(--light); display:flex; justify-content:space-between; }
+.spill { display:inline-block; padding:4px 12px; font-size:8px; text-transform:uppercase; letter-spacing:1.5px; margin-top:12px; font-weight:400; }
+.spill-g { background:rgba(90,122,82,.1); color:var(--green); border:1px solid rgba(90,122,82,.2); }
+.spill-y { background:rgba(168,124,42,.1); color:var(--yellow); border:1px solid rgba(168,124,42,.2); }
+.spill-r { background:rgba(158,58,42,.1); color:var(--red); border:1px solid rgba(158,58,42,.2); }
+.spill-n { background:var(--warm2); color:var(--muted); border:1px solid var(--border); }
+
+/* ── KPI GRID ── */
+.kpi-grid { display:grid; gap:1px; background:var(--border); margin-bottom:28px; box-shadow:var(--shadow); }
+.g4 { grid-template-columns:repeat(4,1fr); }
+.g3 { grid-template-columns:repeat(3,1fr); }
+.g2 { grid-template-columns:repeat(2,1fr); }
+.kpi { background:var(--warm); padding:24px 28px; }
+.kpi-label { font-size:8px; text-transform:uppercase; letter-spacing:3px; color:var(--muted); margin-bottom:10px; font-weight:400; }
+.kpi-val { font-family:'Cormorant Garamond',serif; font-size:36px; font-weight:300; line-height:1; margin-bottom:6px; }
+.kpi-sub { font-size:10px; color:var(--muted); }
+.kpi-badge { display:inline-block; font-size:9px; padding:3px 10px; margin-top:8px; font-weight:400; }
+.bg { background:rgba(90,122,82,.1); color:var(--green); }
+.by { background:rgba(168,124,42,.1); color:var(--yellow); }
+.br { background:rgba(158,58,42,.1); color:var(--red); }
+.bn { background:var(--warm2); color:var(--muted); }
+
+/* ── PROGRESS BAR ── */
+.pb-section { background:var(--warm); border:1px solid var(--border); padding:24px 28px; margin-bottom:28px; box-shadow:var(--shadow); }
+.pb-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:16px; }
+.pb-title { font-size:8px; text-transform:uppercase; letter-spacing:3px; color:var(--muted); font-weight:400; }
+.pb-pct { font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:300; }
+.pb-track { height:4px; background:var(--warm2); position:relative; margin-bottom:8px; }
+.pb-fill { height:100%; transition:width 1.2s cubic-bezier(.4,0,.2,1); }
+.pb-marker { position:absolute; top:-4px; width:1px; height:12px; background:var(--border2); }
+.pb-labels { display:flex; justify-content:space-between; font-size:9px; color:var(--light); }
+
+/* ── CHARTS ── */
+.chart-grid { display:grid; gap:1px; background:var(--border); margin-bottom:28px; box-shadow:var(--shadow); }
+.cg2 { grid-template-columns:1fr 1fr; }
+.chart-card { background:var(--warm); padding:24px 28px; }
+.chart-title { font-size:8px; text-transform:uppercase; letter-spacing:3px; color:var(--muted); margin-bottom:20px; font-weight:400; }
+.h240 { height:240px; position:relative; }
+.h200 { height:200px; position:relative; }
+
+/* ── TABLE ── */
+.table-wrap { background:var(--warm); border:1px solid var(--border); margin-bottom:28px; overflow:hidden; box-shadow:var(--shadow); }
+.table-head { padding:16px 28px; background:var(--warm2); border-bottom:1px solid var(--border); font-size:8px; text-transform:uppercase; letter-spacing:3px; color:var(--muted); font-weight:400; }
+table { width:100%; border-collapse:collapse; }
+th { padding:10px 20px; font-size:8px; text-transform:uppercase; letter-spacing:2px; color:var(--light); border-bottom:1px solid var(--border); text-align:left; font-weight:400; background:var(--warm2); }
+th:not(:first-child) { text-align:right; }
+td { padding:13px 20px; font-size:11px; border-bottom:1px solid var(--border); font-weight:300; }
+td:not(:first-child) { text-align:right; }
+tr:last-child td { border-bottom:none; }
+tr.cur td { background:rgba(90,122,82,.04); }
+tr.cur td:first-child { border-left:2px solid var(--brown); padding-left:18px; }
+
+/* ── UPLOAD ── */
+.upload-strip { background:var(--warm); border:1px solid var(--border); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.ul-label { font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--muted); }
+.ul-sub { font-size:10px; color:var(--light); margin-top:3px; }
+.ul-btn { background:var(--espresso); color:var(--cream); border:none; padding:9px 20px; font-family:'Jost',sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:2px; cursor:pointer; transition:opacity .2s; font-weight:400; }
+.ul-btn:hover { opacity:.8; }
+input[type=file] { display:none; }
+
+/* ── LOADING ── */
+.loader { position:fixed; inset:0; background:rgba(250,248,244,.9); display:none; align-items:center; justify-content:center; z-index:500; flex-direction:column; gap:20px; }
+.loader.on { display:flex; }
+.loader-ring { width:32px; height:32px; border:1.5px solid var(--border2); border-top-color:var(--espresso); border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.loader-text { font-size:9px; text-transform:uppercase; letter-spacing:3px; color:var(--muted); font-weight:400; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px) { .g4{grid-template-columns:repeat(2,1fr);} .channel-cards{grid-template-columns:1fr;} .cg2{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader">
+  <div class="loader-ring"></div>
+  <div class="loader-text" id="loader-text">Fetching live data…</div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-brand">
+    <div class="logo">Nēmah</div>
+    <div class="header-divider"></div>
+    <div class="dash-name">Pacing Dashboard</div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat"><div class="hstat-label">DTC MTD</div><div class="hstat-value" id="hdr-dtc">—</div></div>
+    <div class="hstat"><div class="hstat-label">Amazon MTD</div><div class="hstat-value" id="hdr-amz">—</div></div>
+    <div class="hstat"><div class="hstat-label">Target MTD</div><div class="hstat-value" id="hdr-tgt">—</div></div>
+    <div class="live-pill"><div class="live-dot"></div><span id="hdr-updated">Live</span></div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="tab active" onclick="showTab('overview',this)"><div class="tab-pip" style="background:var(--brown)"></div>Overview</div>
+  <div class="tab" onclick="showTab('shopify',this)"><div class="tab-pip" style="background:var(--shopify)"></div>Shopify / DTC</div>
+  <div class="tab" onclick="showTab('amazon',this)"><div class="tab-pip" style="background:var(--amazon)"></div>Amazon</div>
+  <div class="tab" onclick="showTab('target',this)"><div class="tab-pip" style="background:var(--target)"></div>Target</div>
+</nav>
+
+<div class="main">
+
+<!-- OVERVIEW -->
+<div id="tab-overview" class="view active">
+  <div class="slabel">All Channels — May 2026 MTD</div>
+  <div class="channel-cards">
+    <div class="ch-card shopify">
+      <div class="ch-label"><div class="ch-pip" style="background:var(--shopify)"></div>Shopify / DTC</div>
+      <div class="ch-revenue" style="color:var(--shopify)" id="ov-sh-rev">—</div>
+      <div class="ch-vs" id="ov-sh-vs">vs — goal</div>
+      <div class="mini-track"><div class="mini-fill" style="background:var(--shopify)" id="ov-sh-bar"></div></div>
+      <div class="mini-labels"><span id="ov-sh-pct">—</span><span id="ov-sh-days">—</span></div>
+      <span class="spill" id="ov-sh-pill">—</span>
+    </div>
+    <div class="ch-card amazon">
+      <div class="ch-label"><div class="ch-pip" style="background:var(--amazon)"></div>Amazon</div>
+      <div class="ch-revenue" style="color:var(--amazon)" id="ov-amz-rev">—</div>
+      <div class="ch-vs" id="ov-amz-vs">vs — goal</div>
+      <div class="mini-track"><div class="mini-fill" style="background:var(--amazon)" id="ov-amz-bar"></div></div>
+      <div class="mini-labels"><span id="ov-amz-pct">—</span><span>MTD</span></div>
+      <span class="spill" id="ov-amz-pill">—</span>
+    </div>
+    <div class="ch-card target">
+      <div class="ch-label"><div class="ch-pip" style="background:var(--target)"></div>Target</div>
+      <div class="ch-revenue" style="color:var(--target)" id="ov-tgt-rev">—</div>
+      <div class="ch-vs" id="ov-tgt-vs">vs — goal</div>
+      <div class="mini-track"><div class="mini-fill" style="background:var(--target)" id="ov-tgt-bar"></div></div>
+      <div class="mini-labels"><span id="ov-tgt-pct">—</span><span>PO-based</span></div>
+      <span class="spill" id="ov-tgt-pill">—</span>
+    </div>
+  </div>
+  <div class="kpi-grid g4">
+    <div class="kpi"><div class="kpi-label">Total MTD Revenue</div><div class="kpi-val" id="ov-total">—</div><div class="kpi-sub">All channels combined</div></div>
+    <div class="kpi"><div class="kpi-label">Combined Monthly Goal</div><div class="kpi-val" id="ov-goal">—</div><div class="kpi-sub" id="ov-goal-sub">—</div></div>
+    <div class="kpi"><div class="kpi-label">YTD All Channels</div><div class="kpi-val" id="ov-ytd">—</div><div class="kpi-sub">Jan – present</div></div>
+    <div class="kpi"><div class="kpi-label">Annual Goal</div><div class="kpi-val">$4.55M</div><div class="kpi-sub">DTC + Amazon + Target</div><div class="kpi-badge bn" id="ov-ann-pct">—</div></div>
+  </div>
+  <div class="chart-card" style="margin-bottom:28px;box-shadow:var(--shadow)">
+    <div class="chart-title">Monthly Revenue by Channel — 2026</div>
+    <div class="h240"><canvas id="ov-chart"></canvas></div>
+  </div>
+  <div class="table-wrap">
+    <div class="table-head">Monthly Performance — All Channels</div>
+    <table>
+      <thead><tr><th>Month</th><th>Shopify</th><th>Shop Goal</th><th>Amazon</th><th>Amz Goal</th><th>Target</th><th>Tgt Goal</th><th>Total</th><th>Status</th></tr></thead>
+      <tbody id="ov-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SHOPIFY -->
+<div id="tab-shopify" class="view">
+  <div class="slabel">Shopify / DTC — Live from Shopify</div>
+  <div class="kpi-grid g4">
+    <div class="kpi"><div class="kpi-label">MTD Revenue</div><div class="kpi-val" id="sh-rev">—</div><div class="kpi-sub" id="sh-rev-sub">—</div></div>
+    <div class="kpi"><div class="kpi-label">Monthly Goal</div><div class="kpi-val" id="sh-goal">—</div><div class="kpi-sub" id="sh-goal-pct">—</div></div>
+    <div class="kpi"><div class="kpi-label">Orders MTD</div><div class="kpi-val" id="sh-orders">—</div></div>
+    <div class="kpi"><div class="kpi-label">Sessions MTD</div><div class="kpi-val" id="sh-sess">—</div><div class="kpi-sub" id="sh-cvr">—</div></div>
+  </div>
+  <div class="pb-section">
+    <div class="pb-header"><div class="pb-title">Monthly Goal Attainment</div><div class="pb-pct" id="sh-pb-pct">—</div></div>
+    <div class="pb-track"><div class="pb-fill" style="background:var(--shopify)" id="sh-pb-fill"></div><div class="pb-marker" id="sh-pb-marker"></div></div>
+    <div class="pb-labels"><span>$0</span><span id="sh-pb-mid">—</span><span id="sh-pb-end">—</span></div>
+  </div>
+  <div class="chart-grid cg2">
+    <div class="chart-card"><div class="chart-title">Daily Revenue — This Month</div><div class="h240"><canvas id="sh-daily"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Monthly Actual vs Goal — 2026</div><div class="h240"><canvas id="sh-monthly"></canvas></div></div>
+  </div>
+  <div class="table-wrap">
+    <div class="table-head">Monthly Performance — Shopify / DTC</div>
+    <table><thead><tr><th>Month</th><th>Actual</th><th>Goal</th><th>Variance $</th><th>Variance %</th><th>Status</th></tr></thead>
+    <tbody id="sh-tbody"></tbody></table>
+  </div>
+</div>
+
+<!-- AMAZON -->
+<div id="tab-amazon" class="view">
+  <div class="slabel">Amazon — Via Triple Whale</div>
+  <div class="kpi-grid g4">
+    <div class="kpi"><div class="kpi-label">MTD Revenue</div><div class="kpi-val" id="amz-rev">—</div></div>
+    <div class="kpi"><div class="kpi-label">Monthly Goal</div><div class="kpi-val" id="amz-goal">—</div><div class="kpi-sub" id="amz-pct">—</div></div>
+    <div class="kpi"><div class="kpi-label">ROAS</div><div class="kpi-val">6.26×</div><div class="kpi-sub">May MTD</div></div>
+    <div class="kpi"><div class="kpi-label">Projected EOM</div><div class="kpi-val" id="amz-proj">—</div></div>
+  </div>
+  <div class="pb-section">
+    <div class="pb-header"><div class="pb-title">Monthly Goal Attainment</div><div class="pb-pct" id="amz-pb-pct">—</div></div>
+    <div class="pb-track"><div class="pb-fill" style="background:var(--amazon)" id="amz-pb-fill"></div></div>
+    <div class="pb-labels"><span>$0</span><span id="amz-pb-mid">—</span><span id="amz-pb-end">—</span></div>
+  </div>
+  <div class="chart-grid cg2">
+    <div class="chart-card"><div class="chart-title">Monthly Revenue Trend</div><div class="h240"><canvas id="amz-trend"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Actual vs Goal</div><div class="h240"><canvas id="amz-vs"></canvas></div></div>
+  </div>
+  <div class="table-wrap">
+    <div class="table-head">Monthly Performance — Amazon</div>
+    <table><thead><tr><th>Month</th><th>Actual</th><th>Goal</th><th>Variance $</th><th>Variance %</th><th>Status</th></tr></thead>
+    <tbody id="amz-tbody"></tbody></table>
+  </div>
+</div>
+
+<!-- TARGET -->
+<div id="tab-target" class="view">
+  <div class="slabel">Target — Wholesale PO Tracker</div>
+  <div class="upload-strip">
+    <div><div class="ul-label">Upload Weekly PO</div><div class="ul-sub">Drop new TGT-SO-*.csv file to refresh actuals</div></div>
+    <label class="ul-btn" for="po-file">+ Upload PO CSV</label>
+    <input type="file" id="po-file" accept=".csv">
+  </div>
+  <div class="kpi-grid g4">
+    <div class="kpi"><div class="kpi-label">May MTD Actuals</div><div class="kpi-val">$8,245</div><div class="kpi-sub">Week ending 5/2</div><div class="kpi-badge bg">On pace</div></div>
+    <div class="kpi"><div class="kpi-label">May Goal</div><div class="kpi-val">$75,580</div><div class="kpi-sub">3 weeks remaining</div></div>
+    <div class="kpi"><div class="kpi-label">YTD Actuals</div><div class="kpi-val">$253,875</div><div class="kpi-sub">Feb – May 2026</div><div class="kpi-badge bg">+8.6% vs pace</div></div>
+    <div class="kpi"><div class="kpi-label">Annual Goal</div><div class="kpi-val">$741,373</div><div class="kpi-sub">34.2% complete</div></div>
+  </div>
+  <div class="pb-section">
+    <div class="pb-header"><div class="pb-title">YTD Annual Goal Attainment</div><div class="pb-pct" style="color:var(--green)">34.2%</div></div>
+    <div class="pb-track"><div class="pb-fill" style="background:var(--target);width:34.2%"></div><div class="pb-marker" style="left:33.5%"></div></div>
+    <div class="pb-labels"><span>$0</span><span>Expected pace: 33.5%</span><span>$741K goal</span></div>
+  </div>
+  <div class="chart-grid cg2">
+    <div class="chart-card"><div class="chart-title">Weekly Actual vs Forecast</div><div class="h240"><canvas id="tgt-weekly"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Monthly Actual vs Budget</div><div class="h240"><canvas id="tgt-monthly"></canvas></div></div>
+  </div>
+  <div class="table-wrap">
+    <div class="table-head">Monthly Performance — Target</div>
+    <table><thead><tr><th>Month</th><th>Actual</th><th>Goal</th><th>Variance $</th><th>Variance %</th><th>Status</th></tr></thead>
+    <tbody id="tgt-tbody"></tbody></table>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ── CHART DEFAULTS ──
+Chart.defaults.color = '#9c8e80';
+Chart.defaults.borderColor = '#ddd6c8';
+Chart.defaults.font.family = "'Jost', sans-serif";
+Chart.defaults.font.size = 10;
+Chart.defaults.font.weight = '300';
+
+// ── GOALS (from financial model) ──
+const G = {
+  shopify: {Jan:94933,Feb:144702,Mar:171112,Apr:172325,May:191125,Jun:190551,Jul:197232,Aug:203727,Sep:212446,Oct:272194,Nov:345998,Dec:274907},
+  amazon:  {Jan:75150,Feb:78332,Mar:81694,Apr:82632,May:85720,Jun:88518,Jul:160943,Aug:105240,Sep:107774,Oct:164032,Nov:154643,Dec:136398},
+  target:  {Jan:0,Feb:145806,Mar:31592,Apr:62664,May:75580,Jun:69725,Jul:69917,Aug:70892,Sep:70301,Oct:76540,Nov:58848,Dec:54045}
+};
+
+// ── LIVE DATA (populated from Shopify + Triple Whale) ──
+const D = {
+  shopify: { Jan:124011, Feb:123181, Mar:182217, Apr:151016, May:25144 },
+  amazon:  { Jan:75150,  Feb:78332,  Mar:81694,  Apr:79873,  May:0 },
+  sessions:{ Jan:38881,  Feb:47386,  Mar:86009,  Apr:67244,  May:9173 },
+  orders:  { Jan:1824,   Feb:1875,   Mar:3042,   Apr:2399,   May:404 },
+  dailyRev: [7166,4892,5226,5730,2130],  // May 1-5
+  targetActuals: { Feb:140820, Mar:17890, Apr:86920, May:8245 }
+};
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const today = new Date();
+const curMonthIdx = today.getMonth();
+const curMonth = MONTHS[curMonthIdx];
+const dayOfMonth = today.getDate();
+const daysInMonth = new Date(today.getFullYear(), curMonthIdx+1, 0).getDate();
+
+// ── FORMATTERS ──
+const $K = n => n==null?'—':n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+(n/1e3).toFixed(0)+'K':'$'+Math.round(n).toLocaleString();
+const $F = n => '$'+Math.round(n).toLocaleString();
+const PCT = (a,g) => g && a ? (((a/g)-1)*100).toFixed(1)+'%' : '—';
+const ATT = (a,g) => g && a ? ((a/g)*100).toFixed(1)+'%' : '—';
+
+function pillClass(a, g) {
+  if (!a || !g) return 'spill-n';
+  const r = a/g;
+  return r >= 1.05 ? 'spill-g' : r >= 0.9 ? 'spill-y' : 'spill-r';
+}
+function pillText(a, g) {
+  if (!a || !g) return 'Pending';
+  const r = a/g;
+  return r >= 1.05 ? 'Over Plan' : r >= 0.9 ? 'On Plan' : 'Under';
+}
+function varColor(v) { return v > 0 ? 'var(--green)' : v < 0 ? 'var(--red)' : 'var(--muted)'; }
+
+// ── CHARTS MAP ──
+const charts = {};
+function dc(k) { if(charts[k]) { charts[k].destroy(); delete charts[k]; } }
+
+const baseOpts = (extra={}) => ({
+  responsive:true, maintainAspectRatio:false,
+  plugins:{
+    legend:{display:false},
+    tooltip:{backgroundColor:'#2c2118',titleColor:'#9c8e80',bodyColor:'#faf8f4',borderColor:'#5c4033',borderWidth:0,padding:10,cornerRadius:0,callbacks:{label:c=>' $'+Math.round(c.raw).toLocaleString()}}
+  },
+  scales:{
+    x:{grid:{color:'#ede7db'},ticks:{maxTicksLimit:10}},
+    y:{grid:{color:'#ede7db'},ticks:{callback:v=>'$'+(v>=1000?(v/1000).toFixed(0)+'k':v)}}
+  },
+  ...extra
+});
+
+// ── TABS ──
+function showTab(id, el) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── FETCH FROM NETLIFY FUNCTION ──
+async function fetchLive() {
+  setLoad(true, 'Fetching live Shopify data…');
+  try {
+    const r = await fetch(`/.netlify/functions/data?from=${today.getFullYear()}-01-01&to=${today.toISOString().split('T')[0]}`);
+    if (r.ok) {
+      const j = await r.json();
+      // Merge Shopify monthly
+      if (j.shopify?.monthly) {
+        Object.entries(j.shopify.monthly).forEach(([k,v]) => {
+          const m = MONTHS[parseInt(k.split('-')[1])-1];
+          if (m) D.shopify[m] = v;
+        });
+      }
+      if (j.shopify?.totalOrders) D.orders[curMonth] = j.shopify.totalOrders;
+      if (j.shopify?.sessions) D.sessions[curMonth] = j.shopify.sessions;
+      if (j.shopify?.dailyRev) D.dailyRev = j.shopify.dailyRev;
+    }
+  } catch(e) { console.log('Using cached data'); }
+
+  // Update header timestamp
+  document.getElementById('hdr-updated').textContent = 'Updated ' + today.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  setLoad(false);
+  renderAll();
+}
+
+// ── RENDER ──
+function renderAll() {
+  renderOverview();
+  renderShopify();
+  renderAmazon();
+  renderTarget();
+  // Update header stats
+  document.getElementById('hdr-dtc').textContent = $K(D.shopify[curMonth]||0);
+  document.getElementById('hdr-amz').textContent = $K(D.amazon[curMonth]||0);
+  document.getElementById('hdr-tgt').textContent = $K(D.targetActuals[curMonth]||0);
+}
+
+function renderOverview() {
+  const sh = D.shopify[curMonth]||0, sg = G.shopify[curMonth]||1;
+  const az = D.amazon[curMonth]||0,  ag = G.amazon[curMonth]||1;
+  const tg = D.targetActuals[curMonth]||0, gg = G.target[curMonth]||1;
+  const total = sh+az+tg, totalGoal = sg+ag+gg;
+
+  // Channel cards
+  [['sh',sh,sg,'var(--shopify)'],['amz',az,ag,'var(--amazon)'],['tgt',tg,gg,'var(--target)']].forEach(([id,act,goal,c])=>{
+    document.getElementById(`ov-${id}-rev`).textContent = $K(act);
+    document.getElementById(`ov-${id}-vs`).textContent = `vs ${$K(goal)} goal`;
+    document.getElementById(`ov-${id}-bar`).style.width = Math.min(act/goal*100,100)+'%';
+    document.getElementById(`ov-${id}-pct`).textContent = ATT(act,goal)+' of goal';
+    const pill = document.getElementById(`ov-${id}-pill`);
+    pill.className = 'spill '+pillClass(act,goal);
+    pill.textContent = pillText(act,goal);
+  });
+
+  document.getElementById('ov-total').textContent = $K(total);
+  document.getElementById('ov-goal').textContent = $K(totalGoal);
+  document.getElementById('ov-goal-sub').textContent = ATT(total,totalGoal)+' attained';
+  const ytd = MONTHS.slice(0,curMonthIdx+1).reduce((s,m)=>(D.shopify[m]||0)+(D.amazon[m]||0)+(D.targetActuals[m]||0)+s,0);
+  document.getElementById('ov-ytd').textContent = $K(ytd);
+  document.getElementById('ov-ann-pct').textContent = (ytd/4550000*100).toFixed(1)+'% of $4.55M annual';
+
+  // Overview chart
+  const shownMonths = MONTHS.slice(0, curMonthIdx+1);
+  dc('ov');
+  charts['ov'] = new Chart(document.getElementById('ov-chart'), {
+    type:'bar',
+    data:{labels:shownMonths,datasets:[
+      {label:'Shopify',data:shownMonths.map(m=>D.shopify[m]||0),backgroundColor:'rgba(107,143,94,.7)',stack:'s'},
+      {label:'Amazon', data:shownMonths.map(m=>D.amazon[m]||0), backgroundColor:'rgba(196,123,26,.7)',stack:'s'},
+      {label:'Target', data:shownMonths.map(m=>D.targetActuals[m]||0),backgroundColor:'rgba(160,48,32,.7)',stack:'s'}
+    ]},
+    options:{...baseOpts(),plugins:{...baseOpts().plugins,legend:{display:true,labels:{color:'#9c8e80',boxWidth:10,font:{size:9}}}},scales:{x:{stacked:true,grid:{color:'#ede7db'}},y:{stacked:true,grid:{color:'#ede7db'},ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'k'}}}}
+  });
+
+  // Overview table
+  const tb = document.getElementById('ov-tbody'); tb.innerHTML='';
+  shownMonths.forEach(m=>{
+    const sa=D.shopify[m],aa=D.amazon[m],ta=D.targetActuals[m];
+    const tot=(sa||0)+(aa||0)+(ta||0);
+    const isCur=m===curMonth;
+    tb.innerHTML+=`<tr class="${isCur?'cur':''}">
+      <td>${m} 2026${isCur?' <span style="font-size:9px;color:var(--brown);margin-left:6px">▸ current</span>':''}</td>
+      <td>${sa?$F(sa):'—'}</td><td>${$F(G.shopify[m])}</td>
+      <td>${aa?$F(aa):'—'}</td><td>${$F(G.amazon[m])}</td>
+      <td>${ta?$F(ta):'—'}</td><td>${$F(G.target[m])}</td>
+      <td style="font-weight:400">${tot?$F(tot):'—'}</td>
+      <td><span class="spill ${pillClass(tot,G.shopify[m]+G.amazon[m]+G.target[m])}">${pillText(tot,G.shopify[m]+G.amazon[m]+G.target[m])}</span></td>
+    </tr>`;
+  });
+}
+
+function renderShopify() {
+  const rev = D.shopify[curMonth]||0, goal = G.shopify[curMonth]||1;
+  const orders = D.orders[curMonth]||0, sessions = D.sessions[curMonth]||0;
+  const pctA = rev/goal*100;
+  const expected = dayOfMonth/daysInMonth*100;
+
+  document.getElementById('sh-rev').textContent = $K(rev);
+  document.getElementById('sh-rev-sub').textContent = curMonth+' 2026 MTD · Day '+dayOfMonth+' of '+daysInMonth;
+  document.getElementById('sh-goal').textContent = $K(goal);
+  document.getElementById('sh-goal-pct').textContent = pctA.toFixed(1)+'% attained';
+  document.getElementById('sh-orders').textContent = orders.toLocaleString();
+  document.getElementById('sh-sess').textContent = sessions.toLocaleString()||'—';
+  document.getElementById('sh-cvr').textContent = sessions&&orders ? ((orders/sessions)*100).toFixed(2)+'% CVR' : '—';
+
+  const pbPct = document.getElementById('sh-pb-pct');
+  pbPct.textContent = pctA.toFixed(1)+'%';
+  pbPct.style.color = pctA>=100?'var(--green)':pctA>=85?'var(--yellow)':'var(--red)';
+  document.getElementById('sh-pb-fill').style.width = Math.min(pctA,100)+'%';
+  document.getElementById('sh-pb-marker').style.left = expected.toFixed(1)+'%';
+  document.getElementById('sh-pb-mid').textContent = 'Expected pace: '+expected.toFixed(0)+'%';
+  document.getElementById('sh-pb-end').textContent = $K(goal)+' goal';
+
+  const dayLabels = D.dailyRev.map((_,i)=>`May ${i+1}`);
+  dc('sh-daily');
+  charts['sh-daily'] = new Chart(document.getElementById('sh-daily'), {
+    type:'line',
+    data:{labels:dayLabels,datasets:[{data:D.dailyRev,borderColor:'#6b8f5e',backgroundColor:'rgba(107,143,94,.08)',fill:true,tension:.3,borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#6b8f5e'}]},
+    options:baseOpts()
+  });
+
+  const shownM = MONTHS.slice(0,curMonthIdx+1);
+  dc('sh-monthly');
+  charts['sh-monthly'] = new Chart(document.getElementById('sh-monthly'), {
+    type:'bar',
+    data:{labels:shownM,datasets:[
+      {label:'Actual',data:shownM.map(m=>D.shopify[m]||0),backgroundColor:'rgba(107,143,94,.7)'},
+      {label:'Goal',  data:shownM.map(m=>G.shopify[m]),   backgroundColor:'rgba(107,143,94,.15)'}
+    ]},
+    options:{...baseOpts(),plugins:{...baseOpts().plugins,legend:{display:true,labels:{color:'#9c8e80',boxWidth:10,font:{size:9}}}}}
+  });
+
+  const tb = document.getElementById('sh-tbody'); tb.innerHTML='';
+  shownM.forEach(m=>{
+    const a=D.shopify[m],g=G.shopify[m],v=a?a-g:null;const isCur=m===curMonth;
+    tb.innerHTML+=`<tr class="${isCur?'cur':''}"><td>${m} 2026${isCur?' <span style="font-size:9px;color:var(--brown);margin-left:6px">MTD</span>':''}</td>
+    <td>${a?$F(a):'—'}</td><td>${$F(g)}</td>
+    <td style="color:${v!=null?varColor(v):'inherit'}">${v!=null?(v>0?'+':'')+$F(v):'—'}</td>
+    <td style="color:${v!=null?varColor(v):'inherit'}">${a?PCT(a,g):'—'}</td>
+    <td><span class="spill ${pillClass(a,g)}">${pillText(a,g)}</span></td></tr>`;
+  });
+}
+
+function renderAmazon() {
+  const rev = D.amazon[curMonth]||0, goal = G.amazon[curMonth]||1;
+  const pctA = rev/goal*100;
+  const proj = rev/(dayOfMonth)*daysInMonth;
+
+  document.getElementById('amz-rev').textContent = $K(rev);
+  document.getElementById('amz-goal').textContent = $K(goal);
+  document.getElementById('amz-pct').textContent = pctA.toFixed(1)+'% attained';
+  document.getElementById('amz-proj').textContent = $K(proj);
+
+  const pbPct = document.getElementById('amz-pb-pct');
+  pbPct.textContent = pctA.toFixed(1)+'%';
+  pbPct.style.color = pctA>=100?'var(--green)':pctA>=85?'var(--yellow)':'var(--red)';
+  document.getElementById('amz-pb-fill').style.width = Math.min(pctA,100)+'%';
+  document.getElementById('amz-pb-mid').textContent = 'Expected: '+$K(goal*(dayOfMonth/daysInMonth));
+  document.getElementById('amz-pb-end').textContent = $K(goal)+' goal';
+
+  const shownM = MONTHS.slice(0,curMonthIdx+1);
+  dc('amz-trend');
+  charts['amz-trend'] = new Chart(document.getElementById('amz-trend'), {
+    type:'line',
+    data:{labels:shownM,datasets:[{data:shownM.map(m=>D.amazon[m]||0),borderColor:'#c47b1a',backgroundColor:'rgba(196,123,26,.08)',fill:true,tension:.3,borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#c47b1a'}]},
+    options:baseOpts()
+  });
+  dc('amz-vs');
+  charts['amz-vs'] = new Chart(document.getElementById('amz-vs'), {
+    type:'bar',
+    data:{labels:shownM,datasets:[
+      {label:'Actual',data:shownM.map(m=>D.amazon[m]||0),backgroundColor:'rgba(196,123,26,.7)'},
+      {label:'Goal',  data:shownM.map(m=>G.amazon[m]),   backgroundColor:'rgba(196,123,26,.15)'}
+    ]},
+    options:{...baseOpts(),plugins:{...baseOpts().plugins,legend:{display:true,labels:{color:'#9c8e80',boxWidth:10,font:{size:9}}}}}
+  });
+
+  const tb = document.getElementById('amz-tbody'); tb.innerHTML='';
+  shownM.forEach(m=>{
+    const a=D.amazon[m],g=G.amazon[m],v=a?a-g:null;const isCur=m===curMonth;
+    tb.innerHTML+=`<tr class="${isCur?'cur':''}"><td>${m} 2026${isCur?' <span style="font-size:9px;color:var(--brown);margin-left:6px">MTD</span>':''}</td>
+    <td>${a?$F(a):'—'}</td><td>${$F(g)}</td>
+    <td style="color:${v!=null?varColor(v):'inherit'}">${v!=null?(v>0?'+':'')+$F(v):'—'}</td>
+    <td style="color:${v!=null?varColor(v):'inherit'}">${a?PCT(a,g):'—'}</td>
+    <td><span class="spill ${pillClass(a,g)}">${pillText(a,g)}</span></td></tr>`;
+  });
+}
+
+function renderTarget() {
+  dc('tgt-weekly');
+  charts['tgt-weekly'] = new Chart(document.getElementById('tgt-weekly'), {
+    type:'bar',
+    data:{labels:['4/11','4/18','4/25','5/2'],datasets:[
+      {label:'Actual',  data:[37638,20197,18539,8245],backgroundColor:'rgba(160,48,32,.7)'},
+      {label:'Forecast',data:[37364,12108,11891,6951],backgroundColor:'rgba(160,48,32,.15)'}
+    ]},
+    options:{...baseOpts(),plugins:{...baseOpts().plugins,legend:{display:true,labels:{color:'#9c8e80',boxWidth:10,font:{size:9}}}}}
+  });
+  dc('tgt-monthly');
+  charts['tgt-monthly'] = new Chart(document.getElementById('tgt-monthly'), {
+    type:'bar',
+    data:{labels:['Feb','Mar','Apr','May'],datasets:[
+      {label:'Actual',data:[140820,17890,86920,8245],backgroundColor:'rgba(160,48,32,.7)'},
+      {label:'Goal',  data:[145806,31592,62664,75580],backgroundColor:'rgba(160,48,32,.15)'}
+    ]},
+    options:{...baseOpts(),plugins:{...baseOpts().plugins,legend:{display:true,labels:{color:'#9c8e80',boxWidth:10,font:{size:9}}}}}
+  });
+  const tb = document.getElementById('tgt-tbody'); tb.innerHTML='';
+  [{m:'Feb',a:140820,g:145806},{m:'Mar',a:17890,g:31592},{m:'Apr',a:86920,g:62664},{m:'May',a:8245,g:75580}].forEach(({m,a,g})=>{
+    const v=a-g;const isCur=m===curMonth;
+    tb.innerHTML+=`<tr class="${isCur?'cur':''}"><td>${m} 2026${isCur?' <span style="font-size:9px;color:var(--brown);margin-left:6px">MTD</span>':''}</td>
+    <td>${$F(a)}</td><td>${$F(g)}</td>
+    <td style="color:${varColor(v)}">${(v>0?'+':'')+$F(v)}</td>
+    <td style="color:${varColor(v)}">${PCT(a,g)}</td>
+    <td><span class="spill ${pillClass(a,g)}">${pillText(a,g)}</span></td></tr>`;
+  });
+}
+
+function setLoad(on, msg='') {
+  const el=document.getElementById('loader');
+  if(on){document.getElementById('loader-text').textContent=msg;el.classList.add('on');}
+  else el.classList.remove('on');
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  renderAll(); // Render immediately with cached data
+  fetchLive(); // Then try to fetch live
+  setInterval(fetchLive, 5*60*1000); // Refresh every 5 min
+});
+</script>
+</body>
+</html>
