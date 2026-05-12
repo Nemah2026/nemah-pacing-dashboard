@@ -199,6 +199,12 @@ input[type=file]{display:none}
     <div class="kpi"><div class="kpi-lbl">YTD All Channels</div><div class="kpi-val" id="ov-ytd">—</div><div class="kpi-sub">Jan – present</div></div>
     <div class="kpi"><div class="kpi-lbl">Annual Goal</div><div class="kpi-val">$4.55M</div><div class="kpi-sub">DTC + Amazon + Target</div><div class="badge bn" id="ov-ann">—</div></div>
   </div>
+  <div class="kg g4" style="margin-top:1px">
+    <div class="kpi"><div class="kpi-lbl">Blended ROAS</div><div class="kpi-val" id="ov-roas">—</div><div class="kpi-sub">Revenue ÷ Total Ad Spend</div></div>
+    <div class="kpi"><div class="kpi-lbl">MER</div><div class="kpi-val" id="ov-mer">—</div><div class="kpi-sub">Marketing Efficiency Ratio</div></div>
+    <div class="kpi"><div class="kpi-lbl">Total Ad Spend</div><div class="kpi-val" id="ov-adspend">—</div><div class="kpi-sub" id="ov-adspend-sub">Meta + Google</div></div>
+    <div class="kpi"><div class="kpi-lbl">Blended CPA</div><div class="kpi-val" id="ov-cpa">—</div><div class="kpi-sub">Cost per order</div></div>
+  </div>
   <div class="cc" style="margin-bottom:24px;box-shadow:var(--shadow)">
     <div class="ct" id="ov-chart-title">Monthly Revenue by Channel — 2026</div>
     <div class="h240"><canvas id="ov-chart"></canvas></div>
@@ -220,6 +226,12 @@ input[type=file]{display:none}
     <div class="kpi"><div class="kpi-lbl">Monthly Goal</div><div class="kpi-val" id="sh-goal">—</div><div class="kpi-sub" id="sh-goal-pct">—</div></div>
     <div class="kpi"><div class="kpi-lbl">Orders</div><div class="kpi-val" id="sh-orders">—</div></div>
     <div class="kpi"><div class="kpi-lbl">Sessions</div><div class="kpi-val" id="sh-sess">—</div><div class="kpi-sub" id="sh-cvr">—</div></div>
+  </div>
+  <div class="kg g4" style="margin-top:1px">
+    <div class="kpi"><div class="kpi-lbl">Blended ROAS</div><div class="kpi-val" id="sh-roas">—</div><div class="kpi-sub">Via Triple Whale</div></div>
+    <div class="kpi"><div class="kpi-lbl">MER</div><div class="kpi-val" id="sh-mer">—</div><div class="kpi-sub">Marketing Efficiency Ratio</div></div>
+    <div class="kpi"><div class="kpi-lbl">Total Ad Spend</div><div class="kpi-val" id="sh-adspend">—</div><div class="kpi-sub" id="sh-fb-roas">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">New Customer %</div><div class="kpi-val" id="sh-ncpct">—</div><div class="kpi-sub" id="sh-ncrev">—</div></div>
   </div>
   <div class="pb">
     <div class="pb-hdr"><div class="pb-ttl">Monthly Goal Attainment</div><div class="pb-pct" id="sh-pb-pct">—</div></div>
@@ -348,6 +360,15 @@ const DATA = {
   DATA.meta.May.currentDay = d.getDate();
 })();
 
+// ── Live TW metrics (populated by API fetch) ───────────────────────────────
+const TW = {
+  blendedRoas: null, mer: null,
+  adSpend: null, cpa: null,
+  fbRoas: null, fbSpend: null,
+  googleRoas: null, googleSpend: null,
+  ncPct: null, ncRevenue: null, aov: null
+};
+
 const MONTHS_ALL = ['Jan','Feb','Mar','Apr','May'];
 let currentMonth = 'May';
 
@@ -356,6 +377,7 @@ let currentMonth = 'May';
 // ════════════════════════════════════════════
 const $K = n => n==null?'—':n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1000?'$'+(n/1000).toFixed(0)+'K':'$'+Math.round(n).toLocaleString();
 const $F = n => '$'+Math.round(n).toLocaleString();
+const $X = (n,dp=2) => n==null?'—':Number(n).toFixed(dp)+'x';
 const attPct = (a,g) => g&&a ? ((a/g)*100).toFixed(1)+'%' : '—';
 const varPct  = (a,g) => g&&a ? (((a/g)-1)*100).toFixed(1)+'%' : '—';
 const vc = v => v>0?'var(--green)':v<0?'var(--red)':'var(--muted)';
@@ -462,6 +484,17 @@ function renderOverview(m, sh, az, tg, sg, ag, gg, dayFrac, meta){
   document.getElementById('ov-ytd').textContent = $K(ytd);
   document.getElementById('ov-ann').textContent = (ytd/4550000*100).toFixed(1)+'% of $4.55M annual';
 
+  // Blended ROAS + MER row (from TW live data)
+  const roasEl = document.getElementById('ov-roas');
+  roasEl.textContent = $X(TW.blendedRoas);
+  roasEl.style.color = TW.blendedRoas!=null?(TW.blendedRoas>=3?'var(--green)':TW.blendedRoas>=2?'var(--yellow)':'var(--red)'):'inherit';
+  const merEl = document.getElementById('ov-mer');
+  merEl.textContent = $X(TW.mer);
+  merEl.style.color = TW.mer!=null?(TW.mer>=2.5?'var(--green)':TW.mer>=2?'var(--yellow)':'var(--red)'):'inherit';
+  document.getElementById('ov-adspend').textContent = $K(TW.adSpend);
+  document.getElementById('ov-adspend-sub').textContent = TW.fbSpend&&TW.googleSpend ? `Meta ${$K(TW.fbSpend)} · Google ${$K(TW.googleSpend)}` : 'Meta + Google';
+  document.getElementById('ov-cpa').textContent = TW.cpa!=null?'$'+Number(TW.cpa).toFixed(2):'—';
+
   // Stacked bar chart — all months through selected
   const shown = MONTHS_ALL.slice(0, MONTHS_ALL.indexOf(m)+1);
   dc('ov');
@@ -510,6 +543,18 @@ function renderShopify(m, sh, sg, dayFrac, meta){
   document.getElementById('sh-sess').textContent = sess.toLocaleString();
   document.getElementById('sh-cvr').textContent = sess&&orders ? ((orders/sess)*100).toFixed(2)+'% CVR' : '—';
   document.getElementById('sh-daily-title').textContent = `Daily Revenue — ${meta.label}`;
+
+  // ROAS + MER row
+  const shRoas = document.getElementById('sh-roas');
+  shRoas.textContent = $X(TW.blendedRoas);
+  shRoas.style.color = TW.blendedRoas!=null?(TW.blendedRoas>=3?'var(--green)':TW.blendedRoas>=2?'var(--yellow)':'var(--red)'):'inherit';
+  const shMer = document.getElementById('sh-mer');
+  shMer.textContent = $X(TW.mer);
+  shMer.style.color = TW.mer!=null?(TW.mer>=2.5?'var(--green)':TW.mer>=2?'var(--yellow)':'var(--red)'):'inherit';
+  document.getElementById('sh-adspend').textContent = $K(TW.adSpend);
+  document.getElementById('sh-fb-roas').textContent = TW.fbRoas!=null?`Meta ${$X(TW.fbRoas,2)} · Google ${$X(TW.googleRoas,2)}`:'—';
+  document.getElementById('sh-ncpct').textContent = TW.ncPct!=null?Number(TW.ncPct).toFixed(1)+'%':'—';
+  document.getElementById('sh-ncrev').textContent = TW.ncRevenue!=null?$K(TW.ncRevenue)+' new customer rev':'—';
 
   const pbEl = document.getElementById('sh-pb-pct');
   pbEl.textContent = pctA.toFixed(1)+'%';
@@ -696,6 +741,22 @@ async function loadLiveData(){
     // Update Amazon data from Triple Whale
     if(amz.triplewhale && amz.triplewhale.amazon_sales != null){
       DATA.amazon.monthly['May'] = Math.round(amz.triplewhale.amazon_sales);
+    }
+
+    // Populate TW blended metrics
+    if(dtc.triplewhale){
+      const tw = dtc.triplewhale;
+      TW.blendedRoas  = tw.blended_roas        ?? null;
+      TW.mer          = tw.mer                  ?? null;
+      TW.adSpend      = tw.total_ad_spend       ?? null;
+      TW.cpa          = tw.blended_cpa          ?? null;
+      TW.fbRoas       = tw.facebook_roas        ?? null;
+      TW.fbSpend      = tw.facebook_spend       ?? null;
+      TW.googleRoas   = tw.google_roas          ?? null;
+      TW.googleSpend  = tw.google_spend         ?? null;
+      TW.ncPct        = tw.new_customers_pct    ?? null;
+      TW.ncRevenue    = tw.new_customer_revenue ?? null;
+      TW.aov          = tw.aov                  ?? null;
     }
 
     // Update header timestamp
