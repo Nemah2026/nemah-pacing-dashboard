@@ -152,7 +152,7 @@ input[type=file]{display:none}
   <button class="mbtn" onclick="setMonth('Apr',this)">Apr</button>
   <button class="mbtn on" onclick="setMonth('May',this)">May ← MTD</button>
   <div class="loading-indicator" id="loading-ind"><div class="lring"></div><span>Updating…</span></div>
-  <div class="month-info" id="month-info">May 2026 — MTD (Day 5 of 31)</div>
+  <div class="month-info" id="month-info">May 2026 — MTD (Loading…)</div>
 </div>
 
 <nav class="nav">
@@ -338,9 +338,15 @@ const DATA = {
     Feb: { days:28, isMTD:false, label:'February 2026' },
     Mar: { days:31, isMTD:false, label:'March 2026' },
     Apr: { days:30, isMTD:false, label:'April 2026' },
-    May: { days:31, isMTD:true,  label:'May 2026', currentDay:5 }
+    May: { days:31, isMTD:true,  label:'May 2026', currentDay:1 }
   }
 };
+
+// ── Compute today's day of month dynamically ──────────────────────────────
+(function(){
+  const d = new Date();
+  DATA.meta.May.currentDay = d.getDate();
+})();
 
 const MONTHS_ALL = ['Jan','Feb','Mar','Apr','May'];
 let currentMonth = 'May';
@@ -658,8 +664,59 @@ function renderTarget(m, tg, gg, meta){
   });
 }
 
+// ════════════════════════════════════════════
+// LIVE DATA FETCH — calls Netlify function
+// ════════════════════════════════════════════
+function showLoading(){ document.getElementById('loading-ind').classList.add('on'); }
+function hideLoading(){ document.getElementById('loading-ind').classList.remove('on'); }
+
+async function loadLiveData(){
+  showLoading();
+  try {
+    const [dtcRes, amzRes] = await Promise.all([
+      fetch('/.netlify/functions/data'),
+      fetch('/.netlify/functions/data?channel=amazon')
+    ]);
+    if(!dtcRes.ok || !amzRes.ok) throw new Error('API error');
+    const dtc = await dtcRes.json();
+    const amz = await amzRes.json();
+
+    // Update Shopify (DTC) data for current month
+    if(dtc.shopify){
+      const s = dtc.shopify;
+      if(s.totalRevenue != null) DATA.shopify.monthly['May'] = Math.round(s.totalRevenue);
+      if(s.totalOrders  != null) DATA.shopify.orders['May']  = s.totalOrders;
+      // Build daily array from monthly map if available
+      const mKey = '2026-05';
+      if(s.monthly && s.monthly[mKey] != null){
+        DATA.shopify.monthly['May'] = Math.round(s.monthly[mKey]);
+      }
+    }
+
+    // Update Amazon data from Triple Whale
+    if(amz.triplewhale && amz.triplewhale.amazon_sales != null){
+      DATA.amazon.monthly['May'] = Math.round(amz.triplewhale.amazon_sales);
+    }
+
+    // Update header timestamp
+    const ts = dtc.fetchedAt ? new Date(dtc.fetchedAt).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : 'Live';
+    document.getElementById('hdr-ts').textContent = ts;
+
+    // Refresh month-info label with correct day
+    const meta = DATA.meta['May'];
+    document.getElementById('month-info').textContent =
+      `${meta.label} — MTD (Day ${meta.currentDay} of ${meta.days})`;
+
+  } catch(e){
+    console.warn('Live fetch failed, using cached data:', e.message);
+  } finally {
+    hideLoading();
+    renderAll();
+  }
+}
+
 // Init
-document.addEventListener('DOMContentLoaded', () => renderAll());
+document.addEventListener('DOMContentLoaded', () => loadLiveData());
 </script>
 </body>
 </html>
