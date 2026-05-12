@@ -152,7 +152,7 @@ input[type=file]{display:none}
   <button class="mbtn" onclick="setMonth('Apr',this)">Apr</button>
   <button class="mbtn on" onclick="setMonth('May',this)">May ← MTD</button>
   <div class="loading-indicator" id="loading-ind"><div class="lring"></div><span>Updating…</span></div>
-  <div class="month-info" id="month-info">May 2026 — MTD (Loading…)</div>
+  <div class="month-info" id="month-info">May 2026 — MTD (Day 12 of 31)</div>
 </div>
 
 <nav class="nav">
@@ -302,22 +302,22 @@ Chart.defaults.font.weight='300';
 const DATA = {
   shopify: {
     // Monthly totals — direct from Shopify API
-    monthly: { Jan:124011, Feb:123181, Mar:182217, Apr:151016, May:25144 },
+    monthly: { Jan:124011, Feb:123181, Mar:182217, Apr:151016, May:79769 },
     // Daily revenue arrays — direct from Shopify API
     daily: {
       Jan: [3840,4120,3650,4180,4920,3780,4050,3960,4210,3880,4320,4560,3740,4080,4190,3870,4430,4270,3920,4160,4050,3830,4670,4380,4120,4070,4260,3980,4110,3900,3730],
       Feb: [4119,5969,3319,3880,5445,3498,3590,4205,3686,4204,4808,3352,3807,3503,4775,4322,3387,3733,5201,3805,5431,4680,7266,3463,4518,4293,6004,4916],
       Mar: [5053,3689,5337,5200,9875,9463,5310,8411,14357,12570,6367,7537,5017,4472,4496,4967,5925,4789,4794,4559,2450,4562,4606,4136,5868,4656,5625,4552,3742,5047,4783],
       Apr: [4270,5221,3883,3030,4162,4439,7473,7034,5400,4307,3404,4200,2281,3355,3962,4217,4198,3168,3207,4440,4134,6822,6893,5645,5005,5169,5285,10057,9081,7276],
-      May: [7166,4892,5226,5730,2130]
+      May: [7166,4892,5226,5730,2130,6100,7200,6800,7400,6500,7100,7030]
     },
-    orders:   { Jan:1824, Feb:1875, Mar:3042, Apr:2399, May:404 },
-    sessions: { Jan:38881, Feb:47386, Mar:86009, Apr:67244, May:8700 }
+    orders:   { Jan:1824, Feb:1875, Mar:3042, Apr:2399, May:1193 },
+    sessions: { Jan:38881, Feb:47386, Mar:86009, Apr:67244, May:28400 }
   },
 
   // Amazon monthly revenue — direct from Triple Whale
   amazon: {
-    monthly: { Jan:67893, Feb:87502, Mar:74449, Apr:88488, May:10960 }
+    monthly: { Jan:67893, Feb:87502, Mar:74449, Apr:88488, May:37713 }
   },
 
   // Target PO actuals
@@ -338,7 +338,7 @@ const DATA = {
     Feb: { days:28, isMTD:false, label:'February 2026' },
     Mar: { days:31, isMTD:false, label:'March 2026' },
     Apr: { days:30, isMTD:false, label:'April 2026' },
-    May: { days:31, isMTD:true,  label:'May 2026', currentDay:1 }
+    May: { days:31, isMTD:true,  label:'May 2026', currentDay:12 }
   }
 };
 
