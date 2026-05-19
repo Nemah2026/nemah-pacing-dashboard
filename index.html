@@ -332,9 +332,10 @@ const DATA = {
     monthly: { Jan:67893, Feb:87502, Mar:74449, Apr:88488, May:37713 }
   },
 
-  // Target PO actuals
+  // Target PO actuals — overwritten by live Google Drive data when available
   target: {
-    monthly: { Feb:140820, Mar:17890, Apr:66080, May:45223 }
+    monthly: { Feb:140820, Mar:17890, Apr:66080, May:45223 },
+    weekly:  []   // populated from Drive: [{label:'4/6', actual:37638}, ...]
   },
 
   // 2026 monthly goals — from financial model
@@ -667,35 +668,67 @@ function renderAmazon(m, az, ag, dayFrac, meta){
   });
 }
 
+// Known weekly forecasts (hardcoded — used when Drive data doesn't include forecast)
+const TGT_WEEKLY_FORECAST = {
+  '4/6':37364,'4/13':12108,'4/20':0,'4/27':6951,
+  '5/4':14000,'5/11':8000,'5/18':20000
+};
+
 function renderTarget(m, tg, gg, meta){
   document.getElementById('tgt-slabel').textContent = `Target — ${meta.label}${meta.isMTD?' MTD':''}`;
   document.getElementById('tgt-mtd').textContent = $K(tg)||'—';
-  document.getElementById('tgt-mtd-sub').textContent = meta.isMTD ? 'POs through May 11' : 'Full month POs';
+
+  // Dynamic "POs through X" sub-label
+  const lastWeek = (DATA.target.weekly.length
+    ? DATA.target.weekly[DATA.target.weekly.length-1].label
+    : null);
+  document.getElementById('tgt-mtd-sub').textContent =
+    meta.isMTD && lastWeek ? `POs through ${lastWeek}` : meta.isMTD ? 'MTD POs' : 'Full month POs';
   document.getElementById('tgt-goal').textContent = $K(gg);
 
   dc('tgt-weekly'); dc('tgt-monthly');
+
+  // ── Weekly chart: use live Drive data when available, fall back to hardcoded
+  const weeklyRows = DATA.target.weekly.length
+    ? DATA.target.weekly
+    : [
+        {label:'4/6',  actual:37638},
+        {label:'4/13', actual:20197},
+        {label:'4/27', actual:8245},
+        {label:'5/4',  actual:17278},
+        {label:'5/11', actual:6543},
+        {label:'5/18', actual:21402},
+      ];
+
   charts['tgt-weekly'] = new Chart(document.getElementById('tgt-weekly'), {
     type:'bar',
-    data:{ labels:['4/6','4/13','4/27','5/4','5/11','5/18'], datasets:[
-      { label:'Actual',   data:[37638,20197,8245,17278,6543,21402],  backgroundColor:'rgba(160,48,32,.75)' },
-      { label:'Forecast', data:[37364,12108,6951,14000,8000,20000],  backgroundColor:'rgba(160,48,32,.18)' }
-    ]},
+    data:{
+      labels: weeklyRows.map(w=>w.label),
+      datasets:[
+        { label:'Actual',   data:weeklyRows.map(w=>w.actual),                             backgroundColor:'rgba(160,48,32,.75)' },
+        { label:'Forecast', data:weeklyRows.map(w=>TGT_WEEKLY_FORECAST[w.label]||0),      backgroundColor:'rgba(160,48,32,.18)' }
+      ]
+    },
     options:{ ...baseOpts(), plugins:{...baseOpts().plugins, legend:legendOpts} }
   });
 
+  // ── Monthly chart: always uses DATA.target.monthly (kept current by loadLiveData)
+  const tgtMonths = ['Feb','Mar','Apr','May'];
+  const tgtGoals  = {Feb:145806,Mar:31592,Apr:62664,May:75580};
   charts['tgt-monthly'] = new Chart(document.getElementById('tgt-monthly'), {
     type:'bar',
-    data:{ labels:['Feb','Mar','Apr','May'], datasets:[
-      { label:'Actual', data:[140820,17890,66080,45223],  backgroundColor:'rgba(160,48,32,.75)' },
-      { label:'Goal',   data:[145806,31592,62664,75580], backgroundColor:'rgba(160,48,32,.18)' }
-    ]},
+    data:{
+      labels: tgtMonths,
+      datasets:[
+        { label:'Actual', data:tgtMonths.map(mo=>DATA.target.monthly[mo]||0),  backgroundColor:'rgba(160,48,32,.75)' },
+        { label:'Goal',   data:tgtMonths.map(mo=>tgtGoals[mo]||0),             backgroundColor:'rgba(160,48,32,.18)' }
+      ]
+    },
     options:{ ...baseOpts(), plugins:{...baseOpts().plugins, legend:legendOpts} }
   });
 
-  const tgtRows = [
-    {mo:'Feb',a:140820,g:145806},{mo:'Mar',a:17890,g:31592},
-    {mo:'Apr',a:66080,g:62664},{mo:'May',a:45223,g:75580}
-  ];
+  // ── Monthly table
+  const tgtRows = tgtMonths.map(mo=>({mo, a:DATA.target.monthly[mo]||0, g:tgtGoals[mo]||0}));
   const tb = document.getElementById('tgt-tbody'); tb.innerHTML='';
   tgtRows.forEach(({mo,a,g})=>{
     const vv=a-g; const isCur=mo===m;
@@ -741,6 +774,21 @@ async function loadLiveData(){
     // Update Amazon data from Triple Whale
     if(amz.triplewhale && amz.triplewhale.amazon_sales != null){
       DATA.amazon.monthly['May'] = Math.round(amz.triplewhale.amazon_sales);
+    }
+
+    // Update Target data from Google Drive CSVs
+    if(dtc.target){
+      const t = dtc.target;
+      // Overwrite monthly totals with live Drive values (any month present in the data)
+      if(t.monthly){
+        Object.entries(t.monthly).forEach(([yyyymm, val]) => {
+          const mo = new Date(parseInt(yyyymm.slice(0,4)), parseInt(yyyymm.slice(5,7))-1, 1)
+            .toLocaleString('en-US',{month:'short'});
+          DATA.target.monthly[mo] = Math.round(val);
+        });
+      }
+      // Store weekly breakdown for the chart
+      if(t.weekly && t.weekly.length) DATA.target.weekly = t.weekly;
     }
 
     // Populate TW blended metrics
