@@ -334,7 +334,7 @@ const DATA = {
 
   // Target PO actuals
   target: {
-    monthly: { Feb:140820, Mar:17890, Apr:66080, May:23821 }
+    monthly: { Feb:140820, Mar:17890, Apr:66080, May:45223 }
   },
 
   // 2026 monthly goals — from financial model
@@ -676,9 +676,9 @@ function renderTarget(m, tg, gg, meta){
   dc('tgt-weekly'); dc('tgt-monthly');
   charts['tgt-weekly'] = new Chart(document.getElementById('tgt-weekly'), {
     type:'bar',
-    data:{ labels:['4/6','4/13','4/27','5/4','5/11'], datasets:[
-      { label:'Actual',   data:[37638,20197,8245,17278,6543],  backgroundColor:'rgba(160,48,32,.75)' },
-      { label:'Forecast', data:[37364,12108,6951,14000,8000],  backgroundColor:'rgba(160,48,32,.18)' }
+    data:{ labels:['4/6','4/13','4/27','5/4','5/11','5/18'], datasets:[
+      { label:'Actual',   data:[37638,20197,8245,17278,6543,21402],  backgroundColor:'rgba(160,48,32,.75)' },
+      { label:'Forecast', data:[37364,12108,6951,14000,8000,20000],  backgroundColor:'rgba(160,48,32,.18)' }
     ]},
     options:{ ...baseOpts(), plugins:{...baseOpts().plugins, legend:legendOpts} }
   });
@@ -686,7 +686,7 @@ function renderTarget(m, tg, gg, meta){
   charts['tgt-monthly'] = new Chart(document.getElementById('tgt-monthly'), {
     type:'bar',
     data:{ labels:['Feb','Mar','Apr','May'], datasets:[
-      { label:'Actual', data:[140820,17890,66080,23821],  backgroundColor:'rgba(160,48,32,.75)' },
+      { label:'Actual', data:[140820,17890,66080,45223],  backgroundColor:'rgba(160,48,32,.75)' },
       { label:'Goal',   data:[145806,31592,62664,75580], backgroundColor:'rgba(160,48,32,.18)' }
     ]},
     options:{ ...baseOpts(), plugins:{...baseOpts().plugins, legend:legendOpts} }
@@ -694,7 +694,7 @@ function renderTarget(m, tg, gg, meta){
 
   const tgtRows = [
     {mo:'Feb',a:140820,g:145806},{mo:'Mar',a:17890,g:31592},
-    {mo:'Apr',a:66080,g:62664},{mo:'May',a:23821,g:75580}
+    {mo:'Apr',a:66080,g:62664},{mo:'May',a:45223,g:75580}
   ];
   const tb = document.getElementById('tgt-tbody'); tb.innerHTML='';
   tgtRows.forEach(({mo,a,g})=>{
