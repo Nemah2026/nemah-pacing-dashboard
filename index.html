@@ -68,9 +68,11 @@ body{background:var(--cream);color:var(--espresso);font-family:'Jost',sans-serif
 .ch-pip{width:6px;height:6px;border-radius:50%}
 .ch-rev{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:300;line-height:1;margin-bottom:6px;transition:all .3s}
 .ch-vs{font-size:10px;color:var(--muted);margin-bottom:14px}
-.mini-track{height:2px;background:var(--warm2);margin-bottom:5px}
+.mini-track{height:2px;background:var(--warm2);margin-bottom:5px;position:relative}
 .mini-fill{height:100%;transition:width .9s cubic-bezier(.4,0,.2,1)}
+.mini-pace-mark{position:absolute;top:-4px;width:2px;height:10px;background:var(--border2);border-radius:1px;transition:left .5s ease}
 .mini-labels{font-size:9px;color:var(--light);display:flex;justify-content:space-between}
+.proj-lbl{font-size:9px;color:var(--muted);margin-top:4px}
 .spill{display:inline-block;padding:4px 12px;font-size:8px;text-transform:uppercase;letter-spacing:1.5px;margin-top:12px;font-weight:400}
 .spill-g{background:rgba(90,122,82,.1);color:var(--green);border:1px solid rgba(90,122,82,.2)}
 .spill-y{background:rgba(168,124,42,.1);color:var(--yellow);border:1px solid rgba(168,124,42,.2)}
@@ -172,24 +174,36 @@ input[type=file]{display:none}
       <div class="ch-lbl"><div class="ch-pip" style="background:var(--shopify)"></div>Shopify / DTC</div>
       <div class="ch-rev" style="color:var(--shopify)" id="ov-sh-rev">—</div>
       <div class="ch-vs" id="ov-sh-vs">—</div>
-      <div class="mini-track"><div class="mini-fill" style="background:var(--shopify)" id="ov-sh-bar"></div></div>
-      <div class="mini-labels"><span id="ov-sh-pct">—</span><span>of goal</span></div>
+      <div class="mini-track">
+        <div class="mini-fill" style="background:var(--shopify)" id="ov-sh-bar"></div>
+        <div class="mini-pace-mark" id="ov-sh-pace" style="display:none"></div>
+      </div>
+      <div class="mini-labels"><span id="ov-sh-pct">—</span><span id="ov-sh-pct-r">of goal</span></div>
+      <div class="proj-lbl" id="ov-sh-proj" style="display:none"></div>
       <span class="spill" id="ov-sh-pill">—</span>
     </div>
     <div class="chc a">
       <div class="ch-lbl"><div class="ch-pip" style="background:var(--amazon)"></div>Amazon</div>
       <div class="ch-rev" style="color:var(--amazon)" id="ov-amz-rev">—</div>
       <div class="ch-vs" id="ov-amz-vs">—</div>
-      <div class="mini-track"><div class="mini-fill" style="background:var(--amazon)" id="ov-amz-bar"></div></div>
-      <div class="mini-labels"><span id="ov-amz-pct">—</span><span>of goal</span></div>
+      <div class="mini-track">
+        <div class="mini-fill" style="background:var(--amazon)" id="ov-amz-bar"></div>
+        <div class="mini-pace-mark" id="ov-amz-pace" style="display:none"></div>
+      </div>
+      <div class="mini-labels"><span id="ov-amz-pct">—</span><span id="ov-amz-pct-r">of goal</span></div>
+      <div class="proj-lbl" id="ov-amz-proj" style="display:none"></div>
       <span class="spill" id="ov-amz-pill">—</span>
     </div>
     <div class="chc t">
       <div class="ch-lbl"><div class="ch-pip" style="background:var(--target)"></div>Target</div>
       <div class="ch-rev" style="color:var(--target)" id="ov-tgt-rev">—</div>
       <div class="ch-vs" id="ov-tgt-vs">—</div>
-      <div class="mini-track"><div class="mini-fill" style="background:var(--target)" id="ov-tgt-bar"></div></div>
-      <div class="mini-labels"><span id="ov-tgt-pct">—</span><span>PO-based</span></div>
+      <div class="mini-track">
+        <div class="mini-fill" style="background:var(--target)" id="ov-tgt-bar"></div>
+        <div class="mini-pace-mark" id="ov-tgt-pace" style="display:none"></div>
+      </div>
+      <div class="mini-labels"><span id="ov-tgt-pct">—</span><span id="ov-tgt-pct-r">PO-based</span></div>
+      <div class="proj-lbl" id="ov-tgt-proj" style="display:none"></div>
       <span class="spill" id="ov-tgt-pill">—</span>
     </div>
   </div>
@@ -387,6 +401,10 @@ function pillCls(a,g){ if(!a||!g)return'spill-n'; const r=a/g; return r>=1.05?'s
 function pillTxt(a,g){ if(!a||!g)return'Pending'; const r=a/g; return r>=1.05?'Over Plan':r>=0.9?'On Plan':'Under'; }
 function pillHtml(a,g){ return `<span class="spill ${pillCls(a,g)}">${pillTxt(a,g)}</span>`; }
 
+// Pace-aware pills: compare actual vs prorated goal for current day of month
+function pacePillCls(a,g,df){ if(!a||!g||df>=1)return pillCls(a,g); const pg=g*df,r=a/pg; return r>=1.05?'spill-g':r>=0.9?'spill-y':'spill-r'; }
+function pacePillTxt(a,g,df){ if(!a||!g)return'Pending'; if(df>=1)return pillTxt(a,g); const pg=g*df,r=a/pg; return r>=1.05?'Ahead of Pace':r>=0.9?'On Pace':'Behind Pace'; }
+
 // ════════════════════════════════════════════
 // CHARTS
 // ════════════════════════════════════════════
@@ -463,22 +481,78 @@ function renderOverview(m, sh, az, tg, sg, ag, gg, dayFrac, meta){
 
   document.getElementById('ov-slabel').textContent = `All Channels — ${meta.label}${meta.isMTD?' MTD':''}`;
 
-  // Channel cards helper
+  // Channel cards helper — pace-aware for MTD months
   const setCard = (pfx, act, goal) => {
+    const isMTD = meta.isMTD && dayFrac < 1;
+    const paceGoal = isMTD ? goal * dayFrac : goal;
+    const projEOM  = isMTD && act ? Math.round(act / dayFrac) : act;
+    const paceVar  = isMTD && act ? Math.round(act - paceGoal) : 0;
+    const paceVarSign = paceVar >= 0 ? '+' : '';
+
     document.getElementById(`ov-${pfx}-rev`).textContent = $K(act);
-    document.getElementById(`ov-${pfx}-vs`).textContent = `vs ${$K(goal)} goal`;
+
+    // Sub-line: show expected pace for MTD, full goal otherwise
+    if(isMTD){
+      document.getElementById(`ov-${pfx}-vs`).textContent =
+        `vs ${$K(paceGoal)} expected today · goal ${$K(goal)}`;
+    } else {
+      document.getElementById(`ov-${pfx}-vs`).textContent = `vs ${$K(goal)} goal`;
+    }
+
+    // Fill bar always shows progress toward full month goal
     document.getElementById(`ov-${pfx}-bar`).style.width = Math.min(act?act/goal*100:0,100)+'%';
+
+    // Pace marker tick at today's expected position
+    const paceEl = document.getElementById(`ov-${pfx}-pace`);
+    if(isMTD){
+      paceEl.style.display = 'block';
+      paceEl.style.left = Math.min(dayFrac*100,100)+'%';
+    } else {
+      paceEl.style.display = 'none';
+    }
+
+    // Left label: % of full month goal
     document.getElementById(`ov-${pfx}-pct`).textContent = attPct(act,goal);
+
+    // Right label: pace context for MTD, static otherwise
+    const rEl = document.getElementById(`ov-${pfx}-pct-r`);
+    if(rEl) rEl.textContent = isMTD ? `Day ${meta.currentDay} of ${meta.days}` : 'of goal';
+
+    // Projected EOM line
+    const projEl = document.getElementById(`ov-${pfx}-proj`);
+    if(projEl){
+      if(isMTD && projEOM){
+        projEl.style.display = 'block';
+        const ahead = paceVar >= 0
+          ? `<span style="color:var(--green)">${paceVarSign}${$K(paceVar)} vs pace</span>`
+          : `<span style="color:var(--red)">${paceVarSign}${$K(paceVar)} vs pace</span>`;
+        projEl.innerHTML = `On pace for ${$K(projEOM)} EOM · ${ahead}`;
+      } else {
+        projEl.style.display = 'none';
+      }
+    }
+
+    // Pill: pace-aware for MTD
     const pill = document.getElementById(`ov-${pfx}-pill`);
-    pill.className = 'spill '+pillCls(act,goal);
-    pill.textContent = pillTxt(act,goal);
+    pill.className = 'spill '+pacePillCls(act,goal,dayFrac);
+    pill.textContent = pacePillTxt(act,goal,dayFrac);
   };
   setCard('sh',sh,sg); setCard('amz',az,ag); setCard('tgt',tg,gg);
 
   // KPIs
+  const totalPaceGoal = meta.isMTD && dayFrac < 1 ? totalGoal * dayFrac : totalGoal;
+  const totalProjEOM  = meta.isMTD && dayFrac < 1 && total ? Math.round(total / dayFrac) : null;
   document.getElementById('ov-total').textContent = $K(total);
   document.getElementById('ov-goal').textContent = $K(totalGoal);
-  document.getElementById('ov-goal-pct').textContent = attPct(total,totalGoal)+' attained';
+  if(meta.isMTD && dayFrac < 1){
+    const pPct = attPct(total, totalPaceGoal);
+    const gPct = attPct(total, totalGoal);
+    document.getElementById('ov-goal-pct').textContent =
+      `${gPct} of goal · ${pPct} of pace` +
+      (totalProjEOM ? ` · EOM ~${$K(totalProjEOM)}` : '');
+  } else {
+    document.getElementById('ov-goal-pct').textContent = attPct(total,totalGoal)+' attained';
+  }
 
   const ytd = MONTHS_ALL.slice(0,MONTHS_ALL.indexOf(m)+1)
     .reduce((s,mo)=>(DATA.shopify.monthly[mo]||0)+(DATA.amazon.monthly[mo]||0)+(DATA.target.monthly[mo]||0)+s,0);
