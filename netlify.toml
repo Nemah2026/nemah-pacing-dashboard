@@ -4,6 +4,11 @@
 
 [functions]
   node_bundler = "esbuild"
+  # Extend timeout for Shopify pagination (default is 10s, DTC fetch can take 15-20s with 2000+ orders)
+  included_files = ["netlify/functions/**"]
+
+[functions."data"]
+  timeout = 26
 
 # Scheduled function - Monday 9am CT = 14:00 UTC
 [[plugins]]

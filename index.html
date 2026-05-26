@@ -829,9 +829,10 @@ async function loadLiveData(){
       fetch('/.netlify/functions/data'),
       fetch('/.netlify/functions/data?channel=amazon')
     ]);
-    if(!dtcRes.ok || !amzRes.ok) throw new Error('API error');
+    if(!dtcRes.ok) throw new Error('DTC API error');
     const dtc = await dtcRes.json();
-    const amz = await amzRes.json();
+    // Amazon fetch is best-effort — don't block DTC data if it fails
+    const amz = amzRes.ok ? await amzRes.json() : {};
 
     // Update Shopify (DTC) data for current month
     if(dtc.shopify){
@@ -898,8 +899,11 @@ async function loadLiveData(){
   }
 }
 
-// Init
-document.addEventListener('DOMContentLoaded', () => loadLiveData());
+// Init — load data on page open, then auto-refresh every 5 minutes
+document.addEventListener('DOMContentLoaded', () => {
+  loadLiveData();
+  setInterval(loadLiveData, 5 * 60 * 1000);
+});
 </script>
 </body>
 </html>

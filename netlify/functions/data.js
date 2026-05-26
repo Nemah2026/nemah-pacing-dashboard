@@ -7,7 +7,10 @@ export async function handler(event) {
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    // Never cache — always fetch fresh data
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache"
   };
 
   if (event.httpMethod === "OPTIONS") {
@@ -17,9 +20,21 @@ export async function handler(event) {
   const { channel, from, to } = event.queryStringParameters || {};
 
   try {
+    // Amazon channel only needs TW data — skip Shopify to avoid timeout
+    // (Shopify paginates 250/page; with 2000+ orders that's 8-10 sequential calls)
+    if (channel === "amazon") {
+      const twData = await fetchTripleWhale("amazon", from, to);
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ triplewhale: twData, fetchedAt: new Date().toISOString() })
+      };
+    }
+
+    // DTC channel: fetch Shopify + TW blended + Target in parallel
     const [shopifyData, twData, targetData] = await Promise.all([
       fetchShopify(from, to),
-      fetchTripleWhale(channel, from, to),
+      fetchTripleWhale(null, from, to),
       fetchTargetFromDrive()
     ]);
 
