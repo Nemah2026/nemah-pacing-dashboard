@@ -152,7 +152,8 @@ input[type=file]{display:none}
   <button class="mbtn" onclick="setMonth('Feb',this)">Feb</button>
   <button class="mbtn" onclick="setMonth('Mar',this)">Mar</button>
   <button class="mbtn" onclick="setMonth('Apr',this)">Apr</button>
-  <button class="mbtn on" onclick="setMonth('May',this)">May ← MTD</button>
+  <button class="mbtn" onclick="setMonth('May',this)">May</button>
+  <button class="mbtn on" onclick="setMonth('Jun',this)">Jun ← MTD</button>
   <div class="loading-indicator" id="loading-ind"><div class="lring"></div><span>Updating…</span></div>
   <div class="month-info" id="month-info">May 2026 — MTD (Day 12 of 31)</div>
 </div>
@@ -365,14 +366,15 @@ const DATA = {
     Feb: { days:28, isMTD:false, label:'February 2026' },
     Mar: { days:31, isMTD:false, label:'March 2026' },
     Apr: { days:30, isMTD:false, label:'April 2026' },
-    May: { days:31, isMTD:true,  label:'May 2026', currentDay:12 }
+    May: { days:31, isMTD:false, label:'May 2026' },
+    Jun: { days:30, isMTD:true,  label:'June 2026', currentDay:2 }
   }
 };
 
 // ── Compute today's day of month dynamically ──────────────────────────────
 (function(){
   const d = new Date();
-  DATA.meta.May.currentDay = d.getDate();
+  DATA.meta.Jun.currentDay = d.getDate();
 })();
 
 // ── Live TW metrics (populated by API fetch) ───────────────────────────────
@@ -384,8 +386,8 @@ const TW = {
   ncPct: null, ncRevenue: null, aov: null
 };
 
-const MONTHS_ALL = ['Jan','Feb','Mar','Apr','May'];
-let currentMonth = 'May';
+const MONTHS_ALL = ['Jan','Feb','Mar','Apr','May','Jun'];
+let currentMonth = 'Jun';
 
 // ════════════════════════════════════════════
 // FORMATTERS
