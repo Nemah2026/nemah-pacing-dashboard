@@ -155,7 +155,7 @@ input[type=file]{display:none}
   <button class="mbtn" onclick="setMonth('May',this)">May</button>
   <button class="mbtn on" onclick="setMonth('Jun',this)">Jun ← MTD</button>
   <div class="loading-indicator" id="loading-ind"><div class="lring"></div><span>Updating…</span></div>
-  <div class="month-info" id="month-info">May 2026 — MTD (Day 12 of 31)</div>
+  <div class="month-info" id="month-info">June 2026 — MTD (Day 2 of 30)</div>
 </div>
 
 <nav class="nav">
@@ -361,7 +361,7 @@ const DATA = {
 
   // Target PO actuals — overwritten by live Google Drive data when available
   target: {
-    monthly: { Feb:140820, Mar:17890, Apr:66080, May:45223 },
+    monthly: { Feb:140820, Mar:17890, Apr:66080, May:58916, Jun:12895 },
     weekly:  []   // populated from Drive: [{label:'4/6', actual:37638}, ...]
   },
 
@@ -949,16 +949,15 @@ async function loadLiveData(){
     const ts = dtc.fetchedAt ? new Date(dtc.fetchedAt).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : 'Live';
     document.getElementById('hdr-ts').textContent = ts;
 
-    // Refresh month-info label with correct day
+  } catch(e){
+    console.warn('Live fetch failed, using cached data:', e.message);
+  } finally {
+    // Always update month-info regardless of API success/failure
     const meta = DATA.meta[currentMonth];
     if(meta && meta.isMTD){
       document.getElementById('month-info').textContent =
         `${meta.label} — MTD (Day ${meta.currentDay} of ${meta.days})`;
     }
-
-  } catch(e){
-    console.warn('Live fetch failed, using cached data:', e.message);
-  } finally {
     hideLoading();
     renderAll();
   }
