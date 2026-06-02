@@ -112,7 +112,7 @@ async function fetchTargetFromDrive() {
       if (!dlRes.ok) continue;
       const csvText = await dlRes.text();
 
-      const fileTotal = parseCsvTotal(csvText);
+      const { total: fileTotal, skus: fileSkus } = parseCsvTotal(csvText);
       if (!fileTotal) continue;
 
       // Accumulate into month totals
@@ -120,15 +120,28 @@ async function fetchTargetFromDrive() {
 
       // Accumulate into week totals (multiple CSVs can share the same week label)
       if (!weekMap[label]) {
-        weekMap[label] = { actual: 0, monthKey, sortKey: year * 10000 + month * 100 + day };
+        weekMap[label] = { actual: 0, monthKey, sortKey: year * 10000 + month * 100 + day, skuMap: {} };
       }
       weekMap[label].actual += fileTotal;
+      // Merge SKU data
+      Object.entries(fileSkus).forEach(([name, d]) => {
+        if (!weekMap[label].skuMap[name]) weekMap[label].skuMap[name] = { qty: 0, total: 0 };
+        weekMap[label].skuMap[name].qty   += d.qty;
+        weekMap[label].skuMap[name].total += d.total;
+      });
     }
 
     // Sort weeks chronologically
     const weekly = Object.entries(weekMap)
       .sort((a, b) => a[1].sortKey - b[1].sortKey)
-      .map(([label, v]) => ({ label, actual: Math.round(v.actual), monthKey: v.monthKey }));
+      .map(([label, v]) => ({
+        label,
+        actual: Math.round(v.actual),
+        monthKey: v.monthKey,
+        skus: Object.entries(v.skuMap || {})
+          .map(([name, d]) => ({ name, qty: d.qty, total: Math.round(d.total) }))
+          .sort((a, b) => b.total - a.total),
+      }));
 
     // Round monthly totals
     const monthly = Object.fromEntries(
@@ -186,38 +199,63 @@ function parseCsvLine(line) {
   return cols;
 }
 
+const SKU_DISPLAY = {
+  "850070864084": "Baby Wash & Shampoo",
+  "850070864121": "Kids Detangler",
+  "850070864152": "Bubble Bath",
+  "850070864060": "Baby Lotion",
+  "850070864138": "Nipple + Lip Balm",
+  "850070864176": "Mama Duo Mini",
+  "850070864022": "Stretch Mark Cream",
+  "850070864145": "Scar Cream",
+  "850070864008": "Belly Oil",
+};
+
 function parseCsvTotal(csvText) {
   const lines = csvText.split("\n").map(l => l.trim()).filter(Boolean);
-  if (lines.length < 2) return 0;
+  if (lines.length < 2) return { total: 0, skus: {} };
 
   const header = parseCsvLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z]/g, ""));
-  const totalIdx = header.findIndex(h => h === "total");
-  const qtyIdx   = header.findIndex(h => h === "qtyorder" || h === "qty" || h === "qtyordered");
-  const upcIdx   = header.findIndex(h => h === "upc");
+  const totalIdx  = header.findIndex(h => h === "total");
+  const qtyIdx    = header.findIndex(h => h === "qtyorder" || h === "qty" || h === "qtyordered");
+  const upcIdx    = header.findIndex(h => h === "upc");
+  const vendorIdx = header.findIndex(h => h.includes("vendoritem") || h === "item");
 
   let sum = 0;
+  const skus = {}; // upc → { name, qty, total }
 
   for (let i = 1; i < lines.length; i++) {
     const cols = parseCsvLine(lines[i]);
     if (!cols.length) continue;
 
-    // Skip summary rows (TOTAL label, or blank first columns)
     const first = (cols[0] || "").replace(/[^a-z]/gi, "").toLowerCase();
     if (!first || first === "total") continue;
 
+    const upc  = upcIdx >= 0 ? (cols[upcIdx] || "").trim() : "";
+    const qty  = qtyIdx >= 0 ? parseInt((cols[qtyIdx] || "0").replace(/[^0-9]/g, ""), 10) : 0;
+    const name = SKU_DISPLAY[upc] || (vendorIdx >= 0 ? (cols[vendorIdx] || "").trim() : upc) || upc;
+
+    let lineTotal = 0;
     if (totalIdx >= 0 && cols[totalIdx]) {
       const val = parseFloat((cols[totalIdx] || "").replace(/[$,\s]/g, ""));
-      if (!isNaN(val) && val > 0 && val < 500000) sum += val;
-    } else if (upcIdx >= 0 && qtyIdx >= 0) {
-      // Older file without Total column — calculate from Qty × UPC price
-      const upc   = (cols[upcIdx] || "").trim();
-      const qty   = parseInt((cols[qtyIdx] || "0").replace(/[^0-9]/g, ""), 10);
+      if (!isNaN(val) && val > 0 && val < 500000) lineTotal = val;
+    }
+    if (!lineTotal && upc && qty > 0) {
       const price = UPC_PRICES[upc];
-      if (price && qty > 0) sum += qty * price;
+      if (price) lineTotal = qty * price;
+    }
+
+    if (lineTotal > 0 || qty > 0) {
+      sum += lineTotal;
+      if (name) {
+        if (!skus[name]) skus[name] = { qty: 0, total: 0 };
+        skus[name].qty   += qty;
+        skus[name].total += lineTotal;
+      }
     }
   }
 
-  return sum;
+  return { total: sum, skus };
 }
 
 // ── Shopify: paginated fetch (handles >250 orders) ─────────────────────────

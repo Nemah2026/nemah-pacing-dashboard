@@ -296,21 +296,33 @@ input[type=file]{display:none}
   <div class="kg g4">
     <div class="kpi"><div class="kpi-lbl">Month Actuals</div><div class="kpi-val" id="tgt-mtd">—</div><div class="kpi-sub" id="tgt-mtd-sub">—</div></div>
     <div class="kpi"><div class="kpi-lbl">Monthly Goal</div><div class="kpi-val" id="tgt-goal">—</div></div>
-    <div class="kpi"><div class="kpi-lbl">YTD Actuals</div><div class="kpi-val">$242,068</div><div class="badge bg">+8.6% vs pace</div></div>
-    <div class="kpi"><div class="kpi-lbl">Annual Goal</div><div class="kpi-val">$741,373</div><div class="kpi-sub">32.7% complete</div></div>
+    <div class="kpi"><div class="kpi-lbl">YTD Actuals</div><div class="kpi-val" id="tgt-ytd">—</div><div class="badge" id="tgt-ytd-badge">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">Annual Goal</div><div class="kpi-val">$741,373</div><div class="kpi-sub" id="tgt-ann-pct">—</div></div>
   </div>
   <div class="pb">
-    <div class="pb-hdr"><div class="pb-ttl">YTD Annual Goal Attainment</div><div class="pb-pct" style="color:var(--green)">32.7%</div></div>
-    <div class="pb-track"><div class="pb-fill" style="background:var(--target);width:32.7%"></div><div class="pb-marker" style="left:32.2%"></div></div>
-    <div class="pb-labels"><span>$0</span><span>Expected pace: 32.2%</span><span>$741K goal</span></div>
+    <div class="pb-hdr"><div class="pb-ttl">YTD Annual Goal Attainment</div><div class="pb-pct" id="tgt-ytd-pct">—</div></div>
+    <div class="pb-track"><div class="pb-fill" style="background:var(--target)" id="tgt-ytd-fill"></div><div class="pb-marker" id="tgt-ytd-marker"></div></div>
+    <div class="pb-labels"><span>$0</span><span id="tgt-ytd-pace">—</span><span>$741K goal</span></div>
   </div>
   <div class="cg cg2">
     <div class="cc"><div class="ct">Weekly Actual vs Forecast</div><div class="h240"><canvas id="tgt-weekly"></canvas></div></div>
     <div class="cc"><div class="ct">Monthly Actual vs Budget</div><div class="h240"><canvas id="tgt-monthly"></canvas></div></div>
   </div>
-  <div class="twrap"><div class="thead-bar">Monthly Performance — Target</div>
+  <div class="twrap"><div class="thead-bar">Monthly Performance — Target (Sell-In)</div>
     <table><thead><tr><th>Month</th><th>Actual</th><th>Goal</th><th>Variance $</th><th>Variance %</th><th>Status</th></tr></thead>
     <tbody id="tgt-tbody"></tbody></table></div>
+
+  <div class="twrap" style="margin-top:24px">
+    <div class="thead-bar" style="display:flex;justify-content:space-between;align-items:center">
+      <span>Weekly Sell-In — SKU Breakdown</span>
+      <span style="font-size:9px;font-weight:400">
+        <a href="https://drive.google.com/drive/folders/1esQUTbEQAjTy1YnlyUePKBf9sY8_g_vu" target="_blank" style="color:var(--brown);text-decoration:none">↗ Sell-Thru Reports</a>
+        &nbsp;·&nbsp;
+        <a href="https://drive.google.com/drive/folders/1lZ7bHdYDNqB3JRz05LBr5RjCpGplFthH" target="_blank" style="color:var(--brown);text-decoration:none">↗ PO Folder</a>
+      </span>
+    </div>
+    <table><thead><tr><th>Week</th><th>SKU</th><th style="text-align:right">Units</th><th style="text-align:right">Value</th></tr></thead>
+    <tbody id="tgt-sku-tbody"></tbody></table></div>
 </div>
 
 </div><!-- /main -->
@@ -754,6 +766,22 @@ function renderTarget(m, tg, gg, meta){
   document.getElementById('tgt-slabel').textContent = `Target — ${meta.label}${meta.isMTD?' MTD':''}`;
   document.getElementById('tgt-mtd').textContent = $K(tg)||'—';
 
+  // Dynamic YTD + progress bar
+  const annualGoal = 741373;
+  const ytd = MONTHS_ALL.reduce((s,mo)=>s+(DATA.target.monthly[mo]||0),0);
+  const ytdGoal = MONTHS_ALL.reduce((s,mo)=>s+(DATA.goals.target[mo]||0),0);
+  const ytdPct = (ytd/annualGoal*100);
+  const dayOfYear = Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5);
+  const expPct = (dayOfYear/365*100);
+  const el=document.getElementById('tgt-ytd'); if(el) el.textContent=$K(ytd);
+  const yb=document.getElementById('tgt-ytd-badge');
+  if(yb){ const vsp=((ytd/(ytdGoal||1)-1)*100).toFixed(0); yb.textContent=(vsp>0?'+':'')+vsp+'% vs pace'; yb.className='badge '+(vsp>0?'bg':'br'); }
+  const ap=document.getElementById('tgt-ann-pct'); if(ap) ap.textContent=ytdPct.toFixed(1)+'% complete';
+  const pp=document.getElementById('tgt-ytd-pct'); if(pp){ pp.textContent=ytdPct.toFixed(1)+'%'; pp.style.color=ytdPct>=expPct?'var(--green)':'var(--yellow)'; }
+  const pf=document.getElementById('tgt-ytd-fill'); if(pf) pf.style.width=Math.min(ytdPct,100).toFixed(1)+'%';
+  const pm=document.getElementById('tgt-ytd-marker'); if(pm) pm.style.left=Math.min(expPct,100).toFixed(1)+'%';
+  const pace=document.getElementById('tgt-ytd-pace'); if(pace) pace.textContent='Expected pace: '+expPct.toFixed(1)+'%';
+
   // Dynamic "POs through X" sub-label
   const lastWeek = (DATA.target.weekly.length
     ? DATA.target.weekly[DATA.target.weekly.length-1].label
@@ -788,34 +816,65 @@ function renderTarget(m, tg, gg, meta){
     options:{ ...baseOpts(), plugins:{...baseOpts().plugins, legend:legendOpts} }
   });
 
-  // ── Monthly chart: always uses DATA.target.monthly (kept current by loadLiveData)
-  const tgtMonths = ['Feb','Mar','Apr','May'];
-  const tgtGoals  = {Feb:145806,Mar:31592,Apr:62664,May:75580};
+  // ── Monthly chart — dynamic: all months with a goal that have passed
+  const allMonths = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const tgtMonths = MONTHS_ALL.filter(mo => DATA.goals.target[mo] > 0);
   charts['tgt-monthly'] = new Chart(document.getElementById('tgt-monthly'), {
     type:'bar',
     data:{
       labels: tgtMonths,
       datasets:[
-        { label:'Actual', data:tgtMonths.map(mo=>DATA.target.monthly[mo]||0),  backgroundColor:'rgba(160,48,32,.75)' },
-        { label:'Goal',   data:tgtMonths.map(mo=>tgtGoals[mo]||0),             backgroundColor:'rgba(160,48,32,.18)' }
+        { label:'Actual', data:tgtMonths.map(mo=>DATA.target.monthly[mo]||0),          backgroundColor:'rgba(160,48,32,.75)' },
+        { label:'Goal',   data:tgtMonths.map(mo=>DATA.goals.target[mo]||0),            backgroundColor:'rgba(160,48,32,.18)' }
       ]
     },
     options:{ ...baseOpts(), plugins:{...baseOpts().plugins, legend:legendOpts} }
   });
 
   // ── Monthly table
-  const tgtRows = tgtMonths.map(mo=>({mo, a:DATA.target.monthly[mo]||0, g:tgtGoals[mo]||0}));
   const tb = document.getElementById('tgt-tbody'); tb.innerHTML='';
-  tgtRows.forEach(({mo,a,g})=>{
+  tgtMonths.forEach(mo=>{
+    const a=DATA.target.monthly[mo]||0, g=DATA.goals.target[mo]||0;
     const vv=a-g; const isCur=mo===m;
     tb.innerHTML += `<tr class="${isCur?'cur':''}">
       <td>${mo} 2026${isCur?` <span style="font-size:9px;color:var(--brown);margin-left:6px">${meta.isMTD?'MTD':'✓'}</span>`:''}</td>
-      <td>${$F(a)}</td><td>${$F(g)}</td>
-      <td style="color:${vc(vv)}">${(vv>0?'+':'')+$F(vv)}</td>
-      <td style="color:${vc(vv)}">${varPct(a,g)}</td>
+      <td>${a?$F(a):'—'}</td><td>${$F(g)}</td>
+      <td style="color:${vc(vv)}">${a?(vv>0?'+':'')+$F(vv):'—'}</td>
+      <td style="color:${vc(vv)}">${a?varPct(a,g):'—'}</td>
       <td>${pillHtml(a,g)}</td>
     </tr>`;
   });
+
+  // ── Weekly Sell-In SKU breakdown table
+  const skuTb = document.getElementById('tgt-sku-tbody');
+  if(skuTb){
+    skuTb.innerHTML='';
+    const weeklyRows = DATA.target.weekly.length ? DATA.target.weekly : [];
+    if(!weeklyRows.length){
+      skuTb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--light);padding:20px 0">No PO data — set GOOGLE_SERVICE_ACCOUNT_JSON in Netlify env vars</td></tr>';
+    } else {
+      weeklyRows.slice().reverse().forEach((wk,wi)=>{
+        const skus = wk.skus || [];
+        const totalUnits = skus.reduce((s,r)=>s+(r.qty||0),0);
+        const isLatest = wi===weeklyRows.length-1;
+        skuTb.innerHTML += `<tr style="background:var(--warm2)">
+          <td colspan="2" style="font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--brown);padding:8px 18px">
+            ${wk.label} 2026${isLatest?' <span style="color:var(--green);font-size:9px">← latest</span>':''}
+          </td>
+          <td style="text-align:right;font-size:9px;color:var(--light);padding:8px 18px">${totalUnits?totalUnits.toLocaleString()+' units':''}</td>
+          <td style="text-align:right;font-size:9px;color:var(--light);padding:8px 18px">${wk.actual?$F(wk.actual):'—'}</td>
+        </tr>`;
+        skus.forEach(sku=>{
+          skuTb.innerHTML += `<tr>
+            <td style="padding-left:32px;color:var(--light);font-size:10px"></td>
+            <td>${sku.name}</td>
+            <td style="text-align:right">${(sku.qty||0).toLocaleString()}</td>
+            <td style="text-align:right">${sku.total?$F(sku.total):'—'}</td>
+          </tr>`;
+        });
+      });
+    }
+  }
 }
 
 // ════════════════════════════════════════════
@@ -836,21 +895,23 @@ async function loadLiveData(){
     // Amazon fetch is best-effort — don't block DTC data if it fails
     const amz = amzRes.ok ? await amzRes.json() : {};
 
-    // Update Shopify (DTC) data for current month
+    // Update Shopify (DTC) data — dynamically for any month returned
     if(dtc.shopify){
       const s = dtc.shopify;
-      if(s.totalRevenue != null) DATA.shopify.monthly['May'] = Math.round(s.totalRevenue);
-      if(s.totalOrders  != null) DATA.shopify.orders['May']  = s.totalOrders;
-      // Build daily array from monthly map if available
-      const mKey = '2026-05';
-      if(s.monthly && s.monthly[mKey] != null){
-        DATA.shopify.monthly['May'] = Math.round(s.monthly[mKey]);
+      // Update all monthly values returned
+      if(s.monthly){
+        Object.entries(s.monthly).forEach(([yyyymm, val]) => {
+          const mo = new Date(parseInt(yyyymm.slice(0,4)), parseInt(yyyymm.slice(5,7))-1, 1)
+            .toLocaleString('en-US',{month:'short'});
+          if(val != null) DATA.shopify.monthly[mo] = Math.round(val);
+        });
       }
+      if(s.totalOrders != null) DATA.shopify.orders[currentMonth] = s.totalOrders;
     }
 
     // Update Amazon data from Triple Whale
     if(amz.triplewhale && amz.triplewhale.amazon_sales != null){
-      DATA.amazon.monthly['May'] = Math.round(amz.triplewhale.amazon_sales);
+      DATA.amazon.monthly[currentMonth] = Math.round(amz.triplewhale.amazon_sales);
     }
 
     // Update Target data from Google Drive CSVs
@@ -889,9 +950,11 @@ async function loadLiveData(){
     document.getElementById('hdr-ts').textContent = ts;
 
     // Refresh month-info label with correct day
-    const meta = DATA.meta['May'];
-    document.getElementById('month-info').textContent =
-      `${meta.label} — MTD (Day ${meta.currentDay} of ${meta.days})`;
+    const meta = DATA.meta[currentMonth];
+    if(meta && meta.isMTD){
+      document.getElementById('month-info').textContent =
+        `${meta.label} — MTD (Day ${meta.currentDay} of ${meta.days})`;
+    }
 
   } catch(e){
     console.warn('Live fetch failed, using cached data:', e.message);
