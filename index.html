@@ -895,15 +895,15 @@ async function loadLiveData(){
     // Amazon fetch is best-effort — don't block DTC data if it fails
     const amz = amzRes.ok ? await amzRes.json() : {};
 
-    // Update Shopify (DTC) data — dynamically for any month returned
+    // Update Shopify (DTC) data — only overwrite currentMonth to avoid clobbering historical months
     if(dtc.shopify){
       const s = dtc.shopify;
-      // Update all monthly values returned
       if(s.monthly){
         Object.entries(s.monthly).forEach(([yyyymm, val]) => {
           const mo = new Date(parseInt(yyyymm.slice(0,4)), parseInt(yyyymm.slice(5,7))-1, 1)
             .toLocaleString('en-US',{month:'short'});
-          if(val != null) DATA.shopify.monthly[mo] = Math.round(val);
+          // Only update the active month — never overwrite completed historical months
+          if(mo === currentMonth && val != null) DATA.shopify.monthly[mo] = Math.round(val);
         });
       }
       if(s.totalOrders != null) DATA.shopify.orders[currentMonth] = s.totalOrders;
