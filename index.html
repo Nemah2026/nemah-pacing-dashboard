@@ -887,14 +887,11 @@ function hideLoading(){ document.getElementById('loading-ind').classList.remove(
 async function loadLiveData(){
   showLoading();
   try {
-    const [dtcRes, amzRes] = await Promise.all([
-      fetch('/.netlify/functions/data'),
-      fetch('/.netlify/functions/data?channel=amazon')
-    ]);
+    const dtcRes = await fetch('/.netlify/functions/data');
     if(!dtcRes.ok) throw new Error('DTC API error');
     const dtc = await dtcRes.json();
-    // Amazon fetch is best-effort — don't block DTC data if it fails
-    const amz = amzRes.ok ? await amzRes.json() : {};
+    // Amazon live API disabled — using hardcoded actuals to avoid hitting Amazon rate limits
+    const amz = {};
 
     // Update Shopify (DTC) data — only overwrite currentMonth to avoid clobbering historical months
     if(dtc.shopify){
