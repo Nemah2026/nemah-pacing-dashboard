@@ -20,15 +20,10 @@ export async function handler(event) {
   const { channel, from, to } = event.queryStringParameters || {};
 
   try {
-    // Amazon channel only needs TW data — skip Shopify to avoid timeout
-    // (Shopify paginates 250/page; with 2000+ orders that's 8-10 sequential calls)
+    // Amazon channel endpoint disabled — prevents Triple Whale from querying
+    // Amazon Seller Central and causing SP-API throttling for Finance reports
     if (channel === "amazon") {
-      const twData = await fetchTripleWhale("amazon", from, to);
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({ triplewhale: twData, fetchedAt: new Date().toISOString() })
-      };
+      return { statusCode: 200, headers, body: JSON.stringify({ disabled: true }) };
     }
 
     // DTC channel: fetch Shopify + TW blended + Target in parallel
